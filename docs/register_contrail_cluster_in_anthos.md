@@ -14,7 +14,7 @@ Deploy a GKE cluster and then register it to Anthos
 [Explore Anthos](https://cloud.google.com/anthos/docs/tutorials/explore-anthos)
 
 
-![](/images/2020/07/image1.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image1.png)
 
 
 Install a Kubernetes cluster with Contrail on any VM/BMS on-prem. Check this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail) for deployment.
