@@ -310,3 +310,84 @@ I can view details about it in Kubernetes Engine tab
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image5.png)
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image6.png)
+
+### Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster
+
+Anthos expects a namespace called `application-system` which will run the agent to install the apps from the GCP Marketplace.
+
+We need to create at least two namespaces and enable them to pull the container images from the Google Container Registry (GCR) associated with the Marketplace.
+
+```
+$ kubectl create ns application-system
+
+$ kubens application-system
+Context "kubernetes-admin@kubernetes" modified.
+Active namespace is "application-system".
+```
+
+To pull the images from GCR, we need to create a service account and download the associated JSON token
+
+```
+$ PROJECT="trusty-wares-283912"
+
+$ gcloud iam service-accounts create gcr-sa \
+	--project=${PROJECT}
+
+$ gcloud iam service-accounts list \
+	--project=${PROJECT}
+
+$ gcloud projects add-iam-policy-binding ${PROJECT} \
+ --member="serviceAccount:gcr-sa@${PROJECT}.iam.gserviceaccount.com" \
+ --role="roles/storage.objectViewer"
+
+$ gcloud iam service-accounts keys create ./gcr-sa.json \
+  --iam-account="gcr-sa@${PROJECT}.iam.gserviceaccount.com" \
+  --project=${PROJECT}
+```
+
+Now we need to create a secret with the contents of the token
+
+```
+$ kubectl create secret docker-registry gcr-json-key \
+--docker-server=https://marketplace.gcr.io \
+--docker-username=_json_key \
+--docker-password="$(cat ./gcr-sa.json)" \
+--docker-email=user@email.com
+```
+
+We need to patch the default service account within the namespace to use the secret to pull images from GCR instead of Docker Hub
+
+```
+$ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+```
+
+Finally, we'll annotate the `application-system` namespace to enable the deployment of Kubernetes Apps from GCP Marketplace
+
+```
+kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key
+```
+
+GCP Marketplace expects a storage class by name `standard` as the default storage class.
+
+Rename you storage class if it has a different name or create it. [Here](https://github.com/ovaleanujnpr/kubernetes/blob/master/docs/add_local_pv_k8s.md) is how to create a storage class using local volumes.
+
+```
+$ cat sc.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+```
+
+```
+$ kubectl get sc
+NAME                 PROVISIONER                    RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   kubernetes.io/no-provisioner   Delete          WaitForFirstConsumer   false                  129m
+```
+
+This will be utilized by the GCP Marketplace Apps to dynamically provision Persistent Volume (PV) and Persistent Volume Claim (PVC).
