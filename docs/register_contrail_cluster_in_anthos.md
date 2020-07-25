@@ -19,43 +19,44 @@ Deploy a GKE cluster and then register it to Anthos
 
 Install a Kubernetes cluster with Contrail on any VM/BMS on-prem. Check this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail) for deployment.
 
-In this case I installed Kubernetes 1.18.5 on BMS with Ubuntu 18.04 OS.
+In this case I installed Kubernetes 1.16.11 on BMS with Ubuntu 18.04 OS.
 
 ```
 # kubectl get nodes -o wide
-NAME                      STATUS   ROLES    AGE   VERSION   INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
-r9-ru24.csa.juniper.net   Ready    worker   19d   v1.18.5   192.168.213.114   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://19.3.11
-r9-ru25.csa.juniper.net   Ready    worker   20d   v1.18.5   192.168.213.113   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://19.3.11
-r9-ru26.csa.juniper.net   Ready    master   20d   v1.18.5   192.168.213.112   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://19.3.11
+NAME                      STATUS   ROLES    AGE   VERSION    INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+r9-ru24.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.114   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
+r9-ru25.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.113   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
+r9-ru26.csa.juniper.net   Ready    master   16h   v1.16.11   192.168.213.112   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
 ```
 
 After the Kubernetes cluster is deployed I install Contrail using single yaml file.
 ```
 $ kubectl get po -n kube-system
 NAME                                              READY   STATUS    RESTARTS   AGE
-config-zookeeper-st8gj                            1/1     Running   0          19d
-contrail-agent-n2kqz                              3/3     Running   0          19d
-contrail-agent-pj25z                              3/3     Running   0          19d
-contrail-analytics-alarm-w9m4l                    4/4     Running   0          19d
-contrail-analytics-cwkgk                          4/4     Running   0          19d
-contrail-analytics-snmp-mf6kq                     4/4     Running   0          19d
-contrail-analyticsdb-zlp4w                        4/4     Running   0          19d
-contrail-configdb-6m5ht                           3/3     Running   0          19d
-contrail-controller-config-2t948                  6/6     Running   0          19d
-contrail-controller-control-vwczl                 5/5     Running   0          19d
-contrail-controller-webui-8d6mz                   2/2     Running   0          19d
-contrail-kube-manager-bqtrw                       1/1     Running   0          19d
-coredns-66bff467f8-dh8n2                          1/1     Running   0          19d
-coredns-66bff467f8-fff52                          1/1     Running   0          20d
-etcd-r9-ru26.csa.juniper.net                      1/1     Running   0          20d
-kube-apiserver-r9-ru26.csa.juniper.net            1/1     Running   0          20d
-kube-controller-manager-r9-ru26.csa.juniper.net   1/1     Running   0          20d
-kube-proxy-5q6xd                                  1/1     Running   0          20d
-kube-proxy-l4fnj                                  1/1     Running   0          19d
-kube-proxy-n7l6p                                  1/1     Running   0          20d
-kube-scheduler-r9-ru26.csa.juniper.net            1/1     Running   0          20d
-rabbitmq-x7cnk                                    1/1     Running   0          19d
-redis-22bb7                                       1/1     Running   0          19d
+config-zookeeper-6kqsf                            1/1     Running   0          16h
+contrail-agent-qpxqd                              3/3     Running   0          16h
+contrail-agent-vrcsl                              3/3     Running   0          16h
+contrail-agent-xvbhq                              3/3     Running   0          16h
+contrail-analytics-alarm-m7rhg                    4/4     Running   0          16h
+contrail-analytics-mnx2q                          4/4     Running   0          16h
+contrail-analytics-snmp-v5dzj                     4/4     Running   0          16h
+contrail-analyticsdb-z6cfm                        4/4     Running   0          16h
+contrail-configdb-jp9sg                           3/3     Running   0          16h
+contrail-controller-config-7zn25                  6/6     Running   0          16h
+contrail-controller-control-7nf97                 5/5     Running   0          16h
+contrail-controller-webui-7xgp7                   2/2     Running   0          16h
+contrail-kube-manager-qqh52                       1/1     Running   0          16h
+coredns-5644d7b6d9-njzsm                          1/1     Running   0          16h
+coredns-5644d7b6d9-rfn8t                          1/1     Running   0          16h
+etcd-r9-ru26.csa.juniper.net                      1/1     Running   0          16h
+kube-apiserver-r9-ru26.csa.juniper.net            1/1     Running   0          16h
+kube-controller-manager-r9-ru26.csa.juniper.net   1/1     Running   0          16h
+kube-proxy-nkh65                                  1/1     Running   0          16h
+kube-proxy-nvmwd                                  1/1     Running   0          16h
+kube-proxy-xqrsd                                  1/1     Running   0          16h
+kube-scheduler-r9-ru26.csa.juniper.net            1/1     Running   0          16h
+rabbitmq-f4tws                                    1/1     Running   0          16h
+redis-xlzvb                                       1/1     Running   0          16h
 ```
 
 Now, it is time to register our on-prem Kubernetes cluster to Anthos.
@@ -132,7 +133,7 @@ _Note: if `kubectl` version is lower than the [minimum supported Kubernetes vers
 yum -y update kubectl
 ```
 
-I am running Kubernetes 1.18.5 so I don't need to update it.
+I am running Kubernetes 1.16.11 so I don't need to update it.
 
 I need to authorize `gcloud` to access Google Cloud
 
@@ -185,7 +186,7 @@ A JSON file containing Google Cloud Service Account credentials is required to m
 $ gcloud iam service-accounts create [SERVICE_ACCOUNT_NAME] --project=[PROJECT_ID]
 ```
 
-In my case `[SERVICE_ACCOUNT_NAME]` is contrail. You can choose any name.
+In my case `[SERVICE_ACCOUNT_NAME]` is `contrail-cluster-1`. You can choose any name.
 
 Bind the gkehub.connect IAM role to the service account:
 
@@ -201,7 +202,7 @@ $ gcloud iam service-accounts keys create [LOCAL_KEY_PATH] \
   --iam-account=[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com \
   --project=[PROJECT_ID]
 ```
-The `[LOCAL_KEY_PATH]` is saved in `/tmp/creds/contrail-trusty-wares-283912.json`
+The `[LOCAL_KEY_PATH]` is saved in `/tmp/creds/contrail-cluster-1-trusty-wares-283912.json`
 
 Grant the cluster-admin RBAC role to the user registering the cluster
 
@@ -219,36 +220,37 @@ gcloud container hub memberships register [MEMBERSHIP_NAME] \
    --service-account-key-file=SERVICE_ACCOUNT_KEY_PATH
 ```
 
-In my case, `[MEMBERSHIP_NAME]` is `contrail-cluster` (chosen by me), '[KUBECONFIG_CONTEXT]' is the output for `kubectl config current-context` and `[SERVICE_ACCOUNT_KEY_PATH]` is `/tmp/creds/contrail-trusty-wares-283912.json`.
+In my case, `[MEMBERSHIP_NAME]` is `contrail-cluster-1` (chosen by me), '[KUBECONFIG_CONTEXT]' is the output for `kubectl config current-context` and `[SERVICE_ACCOUNT_KEY_PATH]` is `/tmp/creds/contrail-cluster-1-trusty-wares-283912.json`.
 
 When the command finishes a new pod called gke-connect-agent will run in the cluster. This is responsabile to communication with GKE Hub as I decribed above.
 ```
 $ kubectl get pods -A
 NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
-gke-connect   gke-connect-agent-20200710-02-00-59477469f8-lhngc   1/1     Running   0          30h
-kube-system   config-zookeeper-st8gj                              1/1     Running   0          21d
-kube-system   contrail-agent-n2kqz                                3/3     Running   0          21d
-kube-system   contrail-agent-pj25z                                3/3     Running   0          21d
-kube-system   contrail-analytics-alarm-w9m4l                      4/4     Running   0          21d
-kube-system   contrail-analytics-cwkgk                            4/4     Running   0          21d
-kube-system   contrail-analytics-snmp-mf6kq                       4/4     Running   0          21d
-kube-system   contrail-analyticsdb-zlp4w                          4/4     Running   0          21d
-kube-system   contrail-configdb-6m5ht                             3/3     Running   0          21d
-kube-system   contrail-controller-config-2t948                    6/6     Running   0          21d
-kube-system   contrail-controller-control-vwczl                   5/5     Running   0          21d
-kube-system   contrail-controller-webui-8d6mz                     2/2     Running   0          21d
-kube-system   contrail-kube-manager-bqtrw                         1/1     Running   0          21d
-kube-system   coredns-66bff467f8-dh8n2                            1/1     Running   0          21d
-kube-system   coredns-66bff467f8-fff52                            1/1     Running   0          21d
-kube-system   etcd-r9-ru26.csa.juniper.net                        1/1     Running   0          21d
-kube-system   kube-apiserver-r9-ru26.csa.juniper.net              1/1     Running   0          21d
-kube-system   kube-controller-manager-r9-ru26.csa.juniper.net     1/1     Running   0          21d
-kube-system   kube-proxy-5q6xd                                    1/1     Running   0          21d
-kube-system   kube-proxy-l4fnj                                    1/1     Running   0          21d
-kube-system   kube-proxy-n7l6p                                    1/1     Running   0          21d
-kube-system   kube-scheduler-r9-ru26.csa.juniper.net              1/1     Running   0          21d
-kube-system   rabbitmq-x7cnk                                      1/1     Running   0          21d
-kube-system   redis-22bb7                                         1/1     Running   0          21d
+gke-connect   gke-connect-agent-20200717-00-00-58c749c9d7-l9v66   1/1     Running   0          23m
+kube-system   config-zookeeper-6kqsf                              1/1     Running   0          16h
+kube-system   contrail-agent-qpxqd                                3/3     Running   0          16h
+kube-system   contrail-agent-vrcsl                                3/3     Running   0          16h
+kube-system   contrail-agent-xvbhq                                3/3     Running   0          16h
+kube-system   contrail-analytics-alarm-m7rhg                      4/4     Running   0          16h
+kube-system   contrail-analytics-mnx2q                            4/4     Running   0          16h
+kube-system   contrail-analytics-snmp-v5dzj                       4/4     Running   0          16h
+kube-system   contrail-analyticsdb-z6cfm                          4/4     Running   0          16h
+kube-system   contrail-configdb-jp9sg                             3/3     Running   0          16h
+kube-system   contrail-controller-config-7zn25                    6/6     Running   0          16h
+kube-system   contrail-controller-control-7nf97                   5/5     Running   0          16h
+kube-system   contrail-controller-webui-7xgp7                     2/2     Running   0          16h
+kube-system   contrail-kube-manager-qqh52                         1/1     Running   0          16h
+kube-system   coredns-5644d7b6d9-njzsm                            1/1     Running   0          16h
+kube-system   coredns-5644d7b6d9-rfn8t                            1/1     Running   0          16h
+kube-system   etcd-r9-ru26.csa.juniper.net                        1/1     Running   0          16h
+kube-system   kube-apiserver-r9-ru26.csa.juniper.net              1/1     Running   0          16h
+kube-system   kube-controller-manager-r9-ru26.csa.juniper.net     1/1     Running   0          16h
+kube-system   kube-proxy-nkh65                                    1/1     Running   0          16h
+kube-system   kube-proxy-nvmwd                                    1/1     Running   0          16h
+kube-system   kube-proxy-xqrsd                                    1/1     Running   0          16h
+kube-system   kube-scheduler-r9-ru26.csa.juniper.net              1/1     Running   0          16h
+kube-system   rabbitmq-f4tws                                      1/1     Running   0          16h
+kube-system   redis-xlzvb                                         1/1     Running   0          16h
 ```
 
 _Note: I need SNAT enabled in Contrail to allow gke-connect-agent communication to internet_
@@ -259,7 +261,7 @@ I can view cluster registration status and all the clusters within my Google pro
 $ gcloud container hub memberships list
 NAME                EXTERNAL_ID
 cluster-1           1aac8a94-9f25-4559-bdc6-a663f25417c2
-contrail-cluster    2f7d6521-cf8f-4870-a379-50207ecd579b
+contrail-cluster-1  da221221-0f05-491c-8fe2-2eb4452a593d
 ```
 
 To login to the cluster from the Cloud Console I will use a bearer token. For this I create a Kubernetes service account (KSA) in the cluster.
@@ -280,22 +282,22 @@ EOF
 kubectl apply -f node-reader.yaml
 ```
 
-Create and authorise a KSA. I will use `cluster-admin` role for now.
+Create and authorise a KSA.
 
 ```
 KSA_NAME=[KSA_NAME]
 kubectl create serviceaccount ${KSA_NAME}
-kubectl create clusterrolebinding [BINDING_NAME] \
---clusterrole cluster-admin --serviceaccount default:[KSA_NAME]
+kubectl create clusterrolebinding ksa-view --clusterrole view --serviceaccount default:${KSA_NAME}
+kubectl create clusterrolebinding ksa-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
+kubectl create clusterrolebinding binding-account --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
 ```
 
-In my case, `[KSA_NAME]` is `contrail-sa` and `[BINDING_NAME]` is `contrail-admin`.
-Both name chosen by me.
+In my case, `[KSA_NAME]` is `contrail-cluster-1-sa`.
 
 To acquire the KSA's bearer token, run the following command:
 
 ```
-SECRET_NAME=$(kubectl get serviceaccount [KSA_NAME] -o jsonpath='{$.secrets[0].name}')
+SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath='{$.secrets[0].name}')
 kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
 ```
 
