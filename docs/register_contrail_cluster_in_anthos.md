@@ -452,3 +452,7 @@ $ kubectl get pvc
 NAME                                                    STATUS   VOLUME              CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 postgresql-1-postgresql-pvc-postgresql-1-postgresql-0   Bound    local-pv-e00b14f6   62Gi       RWO            standard       91s
 ```
+
+In GKE Console we can filter to see the applications deployed on on-prem cluster
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image12.png)
