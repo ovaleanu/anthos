@@ -464,17 +464,16 @@ Forward PostgreSQL port locally:
 ```
 $ export NAMESPACE=pgsql
 $ export APP_INSTANCE_NAME="postgresql-1"
-$ kubectl port-forward \
-  --namespace "${NAMESPACE}" \
-  "${APP_INSTANCE_NAME}-postgresql-0" 5432
+$ kubectl port-forward --namespace "${NAMESPACE}" "${APP_INSTANCE_NAME}-postgresql-0" 5432
+Forwarding from 127.0.0.1:5432 -> 5432
+Forwarding from [::1]:5432 -> 5432
 ```
 
 Connect to the database:
 
 ```
 $ apt -y install postgresql-client-10 postgresql-client-common
-$ export PGPASSWORD=$(kubectl get secret "postgresql-1-secret" \
-  --output=jsonpath='{.data.password}' | base64 -d)
+$ export PGPASSWORD=$(kubectl get secret "postgresql-1-secret" --output=jsonpath='{.data.password}' | base64 -d)
 $ psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.6.18)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type "help" for help.
