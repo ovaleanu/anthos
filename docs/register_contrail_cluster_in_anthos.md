@@ -147,18 +147,7 @@ Being a dev enviroment I preffer to install gcloud beta as well to try alpha or 
  gcloud components install beta
 ```
 
-Next, I need to grant the required IAM roles to the user registering the cluster
-
-```
-$ gcloud projects add-iam-policy-binding [PROJECT_ID] \
- --member user:[GCP_EMAIL_ADDRESS] \
- --role=roles/gkehub.admin \
- --role=roles/iam.serviceAccountAdmin \
- --role=roles/iam.serviceAccountKeyAdmin \
- --role=roles/resourcemanager.projectIamAdmin
-```
-
-`[PROJECT_ID]` I can find the value from GKE Console or using `gcloud` cli command
+List the projects
 
 ```
 $ gcloud projects list
@@ -166,13 +155,24 @@ PROJECT_ID            NAME              PROJECT_NUMBER
 dotted-ranger-283911  My First Project  482168856288
 trusty-wares-283912   Contrail          234378606342
 ```
-In my case is `trusty-wares-283912`.
+
+Next, I need to grant the required IAM roles to the user registering the cluster
+
+```
+PROJECT_ID=trusty-wares-283912
+$ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+ --member user:[GCP_EMAIL_ADDRESS] \
+ --role=roles/gkehub.admin \
+ --role=roles/iam.serviceAccountAdmin \
+ --role=roles/iam.serviceAccountKeyAdmin \
+ --role=roles/resourcemanager.projectIamAdmin
+```
 
 I enabled the APIs required for my project
 
 ```
 gcloud services enable \
- --project=[PROJECT_ID] \
+ --project=${PROJECT_ID} \
  container.googleapis.com \
  gkeconnect.googleapis.com \
  gkehub.googleapis.com \
@@ -183,26 +183,24 @@ gcloud services enable \
 A JSON file containing Google Cloud Service Account credentials is required to manually register a cluster. Create a service account by running the following command:
 
 ```
-$ gcloud iam service-accounts create [SERVICE_ACCOUNT_NAME] --project=[PROJECT_ID]
+SERVICE_ACCOUNT_NAME=`contrail-cluster-1`
+$ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT_ID}
 ```
-
-In my case `[SERVICE_ACCOUNT_NAME]` is `contrail-cluster-1`. You can choose any name.
 
 Bind the gkehub.connect IAM role to the service account:
 
 ```
-$ gcloud projects add-iam-policy-binding [PROJECT_ID] \
- --member="serviceAccount:[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com" \
+$ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+ --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
  --role="roles/gkehub.connect"
 ```
 
 Download the service account's private key JSON file. You use this file in the next section:
 ```
-$ gcloud iam service-accounts keys create [LOCAL_KEY_PATH] \
-  --iam-account=[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com \
-  --project=[PROJECT_ID]
+$ gcloud iam service-accounts keys create /tmp/creds/contrail-cluster-1-trusty-wares-283912.json \
+  --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
+  --project=${PROJECT_ID}
 ```
-The `[LOCAL_KEY_PATH]` is saved in `/tmp/creds/contrail-cluster-1-trusty-wares-283912.json`
 
 Grant the cluster-admin RBAC role to the user registering the cluster
 
@@ -210,17 +208,18 @@ Grant the cluster-admin RBAC role to the user registering the cluster
 kubectl auth can-i '*' '*' --all-namespaces
 ```
 
-To register a non-GKE cluster I nned to run the following command
+To register a non-GKE cluster we need to run the following command
 
 ```
-gcloud container hub memberships register [MEMBERSHIP_NAME] \
-   --project=[PROJECT_ID] \
-   --context=[KUBECONFIG_CONTEXT] \
-   --kubeconfig=[KUBECONFIG_PATH] \
-   --service-account-key-file=SERVICE_ACCOUNT_KEY_PATH
+MEMBERSHIP_NAME=contrail-cluster-1
+
+gcloud container hub memberships register ${MEMBERSHIP_NAME} \
+   --project=${PROJECT_ID} \
+   --context=$(kubectl config current-context) \
+   --kubeconfig=$HOME/.kube/config \
+   --service-account-key-file=/tmp/creds/contrail-cluster-1-trusty-wares-283912.json
 ```
 
-In my case, `[MEMBERSHIP_NAME]` is `contrail-cluster-1` (chosen by me), '[KUBECONFIG_CONTEXT]' is the output for `kubectl config current-context` and `[SERVICE_ACCOUNT_KEY_PATH]` is `/tmp/creds/contrail-cluster-1-trusty-wares-283912.json`.
 
 When the command finishes a new pod called gke-connect-agent will run in the cluster. This is responsabile to communication with GKE Hub as I decribed above.
 ```
@@ -285,14 +284,12 @@ kubectl apply -f node-reader.yaml
 Create and authorise a KSA.
 
 ```
-KSA_NAME=[KSA_NAME]
+KSA_NAME=contrail-cluster-1-sa
 kubectl create serviceaccount ${KSA_NAME}
 kubectl create clusterrolebinding ksa-view --clusterrole view --serviceaccount default:${KSA_NAME}
 kubectl create clusterrolebinding ksa-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
 kubectl create clusterrolebinding binding-account --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
 ```
-
-In my case, `[KSA_NAME]` is `contrail-cluster-1-sa`.
 
 To acquire the KSA's bearer token, run the following command:
 
@@ -366,7 +363,7 @@ $ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-j
 Finally, we'll annotate the `application-system` namespace to enable the deployment of Kubernetes Apps from GCP Marketplace
 
 ```
-kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key
+$ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key
 ```
 
 GCP Marketplace expects a storage class by name `standard` as the default storage class.
@@ -388,8 +385,70 @@ volumeBindingMode: WaitForFirstConsumer
 
 ```
 $ kubectl get sc
-NAME                 PROVISIONER                    RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/no-provisioner   Delete          WaitForFirstConsumer   false                  129m
+NAME                 PROVISIONER                    AGE
+standard (default)   kubernetes.io/no-provisioner   6m14s
 ```
 
 This will be utilized by the GCP Marketplace Apps to dynamically provision Persistent Volume (PV) and Persistent Volume Claim (PVC).
+
+
+Next, we need to create and configure a namespace for the app we will deploy it from GCP Marketplace
+
+```
+$ kubectl create ns pgsql
+
+$ kubens pgsql
+
+$ kubectl create secret docker-registry gcr-json-key \
+ --docker-server=https://gcr.io \
+--docker-username=_json_key \
+--docker-password="$(cat ./gcr-sa.json)" \
+--docker-email=user@email.com
+```
+
+Docker-server key is pointing to https://gcr.io which holds the container images for the GCP Marketplace Apps
+
+Similar to the other namespace, we need to patch the default service account within the pgsql namespace to use the secret to pull images from GCR instead of Docker Hub
+
+```
+$ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+```
+
+Also annotate the pgsql namespace to enable the deployment of Kubernetes Apps from GCP Marketplace
+
+```
+$ kubectl annotate namespace pgsql marketplace.cloud.google.com/imagePullSecret=gcr-json-key
+```
+
+All these steps were a preparation to deploy an app from GCP Marketplace on the on-prem K8s with contrail ClusterRole
+
+Choose PostgresSQl Server from GCP Marketplace
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image7.png)
+
+Click on Configure de start the deployment procedure
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image8.png)
+
+Choose the external cluster, `contrail-cluster-1`
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image9.png)
+
+Select the namespace created, storage class and click Deploy
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image10.png)
+
+After a minute PostgresSQl is deployed
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image11.png)
+
+```
+$ kubectl get po -n pgsql
+NAME                          READY   STATUS      RESTARTS   AGE
+postgresql-1-deployer-nzpfn   0/1     Completed   0          91s
+postgresql-1-postgresql-0     2/2     Running     0          46s
+
+$ kubectl get pvc
+NAME                                                    STATUS   VOLUME              CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+postgresql-1-postgresql-pvc-postgresql-1-postgresql-0   Bound    local-pv-e00b14f6   62Gi       RWO            standard       91s
+```
