@@ -183,7 +183,7 @@ gcloud services enable \
 A JSON file containing Google Cloud Service Account credentials is required to manually register a cluster. Create a service account by running the following command:
 
 ```
-SERVICE_ACCOUNT_NAME=`contrail-cluster-1`
+SERVICE_ACCOUNT_NAME=contrail-cluster-1
 $ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT_ID}
 ```
 
@@ -300,7 +300,7 @@ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
 
 The output token use it in Cloud Console to Login to the cluster
 
-The clusters should be visibile in anthos
+The clusters should be visibile in Anthos
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image4.png)
 
