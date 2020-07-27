@@ -346,7 +346,7 @@ $ kubectl create secret docker-registry gcr-json-key \
 --docker-server=https://marketplace.gcr.io \
 --docker-username=_json_key \
 --docker-password="$(cat ./gcr-sa.json)" \
---docker-email=user@email.com
+--docker-email=<your_username_gcp_console>
 ```
 
 We need to patch the default service account within the namespace to use the secret to pull images from GCR instead of Docker Hub
@@ -398,7 +398,7 @@ $ kubectl create secret docker-registry gcr-json-key \
  --docker-server=https://gcr.io \
 --docker-username=_json_key \
 --docker-password="$(cat ./gcr-sa.json)" \
---docker-email=user@email.com
+--docker-email=<your_username_gcp_console>
 ```
 
 Docker-server key is pointing to https://gcr.io which holds the container images for the GCP Marketplace Apps
