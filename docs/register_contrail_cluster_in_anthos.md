@@ -307,9 +307,7 @@ I can view details about it in Kubernetes Engine tab
 
 ### Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster
 
-Anthos expects a namespace called `application-system` which will run the agent to install the apps from the GCP Marketplace.
-
-We need to create at least two namespaces and enable them to pull the container images from the Google Container Registry (GCR) associated with the Marketplace.
+The first time you deploy an application to a Anthos GKE on-prem cluster, you must also create a namespace called `application-system` for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.
 
 ```
 $ kubectl create ns application-system
@@ -339,7 +337,7 @@ $ gcloud iam service-accounts keys create ./gcr-sa.json \
   --project=${PROJECT}
 ```
 
-Now we need to create a secret with the contents of the token
+Create a secret with the contents of the token
 
 ```
 $ kubectl create secret docker-registry gcr-json-key \
@@ -349,13 +347,13 @@ $ kubectl create secret docker-registry gcr-json-key \
 --docker-email=<your_username_gcp_console>
 ```
 
-We need to patch the default service account within the namespace to use the secret to pull images from GCR instead of Docker Hub
+Patch the default service account within the namespace to use the secret to pull images from GCR instead of Docker Hub
 
 ```
 $ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 ```
 
-Finally, we'll annotate the `application-system` namespace to enable the deployment of Kubernetes Apps from GCP Marketplace
+Annotate the `application-system` namespace to enable the deployment of Kubernetes Apps from GCP Marketplace
 
 ```
 $ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key
@@ -387,7 +385,7 @@ standard (default)   kubernetes.io/no-provisioner   6m14s
 This will be utilized by the GCP Marketplace Apps to dynamically provision Persistent Volume (PV) and Persistent Volume Claim (PVC).
 
 
-Next, we need to create and configure a namespace for the app we will deploy it from GCP Marketplace
+Next, we need to create and configure a namespace for the app we will deploy it from GCP Marketplace. We will deploy PostgreSQL.
 
 ```
 $ kubectl create ns pgsql
@@ -403,7 +401,7 @@ $ kubectl create secret docker-registry gcr-json-key \
 
 Docker-server key is pointing to https://gcr.io which holds the container images for the GCP Marketplace Apps
 
-Similar to the other namespace, we need to patch the default service account within the pgsql namespace to use the secret to pull images from GCR instead of Docker Hub
+Like we did for `application-system` namespace, we need to patch the default service account within the pgsql namespace to use the secret to pull images from GCR instead of Docker Hub
 
 ```
 $ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
@@ -415,7 +413,7 @@ Also annotate the pgsql namespace to enable the deployment of Kubernetes Apps fr
 $ kubectl annotate namespace pgsql marketplace.cloud.google.com/imagePullSecret=gcr-json-key
 ```
 
-All these steps were a preparation to deploy an app from GCP Marketplace on the on-prem K8s with contrail ClusterRole
+All these steps were a preparation to deploy an app from GCP Marketplace to the on-prem K8s cluster with Contrail
 
 Choose PostgresSQl Server from GCP Marketplace
 
