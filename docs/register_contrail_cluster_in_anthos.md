@@ -172,7 +172,13 @@ gcloud services enable \
  gkeconnect.googleapis.com \
  gkehub.googleapis.com \
  cloudresourcemanager.googleapis.com \
- anthos.googleapis.com
+ anthos.googleapis.com \
+ iamcredentials.googleapis.com \
+ meshca.googleapis.com \
+ meshconfig.googleapis.com \
+ meshtelemetry.googleapis.com \
+ monitoring.googleapis.com \
+ runtimeconfig.googleapis.com
 ```
 
 A JSON file containing Google Cloud Service Account credentials is required to manually register a cluster. Create a service account by running the following command:
@@ -344,7 +350,7 @@ $ kubectl create secret docker-registry gcr-json-key \
 --docker-server=https://marketplace.gcr.io \
 --docker-username=_json_key \
 --docker-password="$(cat ./gcr-sa.json)" \
---docker-email=<your_username_gcp_console>
+--docker-email=[GCP_EMAIL_ADDRESS]
 ```
 
 Patch the default service account within the namespace to use the secret to pull images from GCR instead of Docker Hub
@@ -396,7 +402,7 @@ $ kubectl create secret docker-registry gcr-json-key \
  --docker-server=https://gcr.io \
 --docker-username=_json_key \
 --docker-password="$(cat ./gcr-sa.json)" \
---docker-email=<your_username_gcp_console>
+--docker-email=[GCP_EMAIL_ADDRESS]
 ```
 
 Docker-server key is pointing to https://gcr.io which holds the container images for the GCP Marketplace Apps
