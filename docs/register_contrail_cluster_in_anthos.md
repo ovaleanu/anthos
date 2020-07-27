@@ -1,7 +1,7 @@
 ## Integrate a Kubernetes cluster with Contrail in Google Anthos
 
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
-The scope of this document is integrate an on-prem K8s cluster with Contrail with Anthos.
+The scope of this document is integrate an on-prem K8s and EKS cluster with Contrail in GCP Anthos.
 
 Fun fact Anthos is flower in Greek. The reason they chose that is because flowers grow on premise, but they need rain from the cloud to flourish.
 
@@ -63,16 +63,11 @@ Now, it is time to register our on-prem Kubernetes cluster to Anthos.
 
 ### Register an External Kubernetes Cluster to GKE Connect
 
-Connect allows users to connect the on-prem Kubernetes clusters as well as Kubernetes clusters running on other public clouds with the Google cloud platform. Connect uses an encrypted connection between the Kubernetes clusters and the Google cloud platform project and enables authorized users to login to clusters, access details about their resources, projects, and clusters, and to manage cluster infrastructure and workloads whether they are running on Google’s hardware or elsewhere.
-When remote clusters are registered, a GKE Connect Agent is deployed to the cluster which manages connectivity to various API endpoints on GCP. The cluster doesn’t require a public IP and just needs reachability to a set of googleapis. Connect agent uses an authenticated and encrypted connection from the Kubernetes cluster to GCP. Connect agent uses VPC Service Controls to ensure that GCP is an extension of users private cloud and can traverse NATs and firewalls. All user interactions with clusters are visible in Kubernetes audit logs.
+Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details [here](https://cloud.google.com/anthos/multicluster-management/connect/overview).
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png)
 
 To register a remote cluster we need kubeconfig of the cluster, `gcloud` cli tool and some RBAC settings.
-
-Cluster registration can be made using GKE console as shown below or cli. I will use cli to register a remote Kubernetes cluster with Contrail.
-
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image3.png)
 
 Before we begin I will set permissive RBAC permissions
 
