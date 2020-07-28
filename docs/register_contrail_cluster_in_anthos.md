@@ -531,8 +531,6 @@ All these steps were a preparation to deploy an app from GCP Marketplace to the 
 
 Choose PostgresSQl Server from GCP Marketplace
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image7.png)
-
 Click on Configure de start the deployment procedure
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image8.png)
