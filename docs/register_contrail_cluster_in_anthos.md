@@ -529,9 +529,7 @@ $ kubectl annotate namespace pgsql marketplace.cloud.google.com/imagePullSecret=
 
 All these steps were a preparation to deploy an app from GCP Marketplace to the on-prem K8s cluster with Contrail
 
-Choose PostgresSQl Server from GCP Marketplace
-
-Click on Configure de start the deployment procedure
+Choose PostgresSQL Server from GCP Marketplace and then click on Configure de start the deployment procedure
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image8.png)
 
