@@ -396,8 +396,17 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --deco
 
 The output token use it in Cloud Console to Login to the cluster
 
+I will do the same for EKS cluster
 
+```
+$ kubectx eks
+$ $ kubectl apply -f node-reader.yaml
 
+$ kubectl create serviceaccount ${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-view --clusterrole view --serviceaccount default:${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
+```
 
 
 The clusters should be visibile in Anthos
