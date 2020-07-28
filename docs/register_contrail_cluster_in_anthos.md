@@ -1,35 +1,34 @@
-## Integrate a Kubernetes cluster with Contrail in Google Anthos
+# Integrate a Kubernetes cluster with Contrail in Google Anthos
 
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
-The scope of this document is integrate an on-prem K8s and EKS cluster with Contrail in GCP Anthos.
+The scope of this document is integrate an on-prem K8s runing with Contrail toghther with a GKE and EKS cluster in GCP Anthos.
 
 Fun fact Anthos is flower in Greek. The reason they chose that is because flowers grow on premise, but they need rain from the cloud to flourish.
 
 Google Cloud Platform console provides a single control plane for managing Kubernetes clusters deployed in multiple locations.
 
-Deploy a GKE cluster and then register it to Anthos
+As prerequisites, I will need to install GCP cli tolls from Cloud SDK package, [Install Cloud SDK on macOS](https://cloud.google.com/sdk/docs/quickstart-macos), [`eksctl` cli tool](https://eksctl.io/introduction/#getting-started) for creating EKS cluster on AWS, `kubectl` and because we will have three different clusters [`kubectx` and `kubens`](https://github.com/ahmetb/kubectx) are useful tools to managae them easily.
 
-[GKE quickstart](https://cloud.google.com/kubernetes-engine/docs/quickstart)
+_Note: if `kubectl` version is lower than the [minimum supported Kubernetes version](https://cloud.google.com/kubernetes-engine/docs/release-notes) of Google Kubernetes Engine (GKE), then you need to update it_
 
-[Explore Anthos](https://cloud.google.com/anthos/docs/tutorials/explore-anthos)
+## Creating Kubernetes clusters
+
+### Creating on-prem Kubernetes cluster using Contrail SDN
 
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image1.png)
+I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
 
-
-Install a Kubernetes cluster with Contrail on any VM/BMS on-prem. Check this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail) for deployment.
-
-In this case I installed Kubernetes 1.16.11 on BMS with Ubuntu 18.04 OS.
+In this case, I installed Kubernetes 1.16.11 on Ubuntu 18.04 OS.
 
 ```
-# kubectl get nodes -o wide
+$ kubectl get nodes -o wide
 NAME                      STATUS   ROLES    AGE   VERSION    INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
 r9-ru24.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.114   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
 r9-ru25.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.113   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
 r9-ru26.csa.juniper.net   Ready    master   16h   v1.16.11   192.168.213.112   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
 ```
 
-After the Kubernetes cluster is deployed I install Contrail using single yaml file.
+After the Kubernetes cluster is deployed, I installed Contrail using single yaml file.
 ```
 $ kubectl get po -n kube-system
 NAME                                              READY   STATUS    RESTARTS   AGE
@@ -58,19 +57,6 @@ kube-scheduler-r9-ru26.csa.juniper.net            1/1     Running   0          1
 rabbitmq-f4tws                                    1/1     Running   0          16h
 redis-xlzvb                                       1/1     Running   0          16h
 ```
-
-Now, it is time to register our on-prem Kubernetes cluster to Anthos.
-
-### Register an External Kubernetes Cluster to GKE Connect
-
-Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details [here](https://cloud.google.com/anthos/multicluster-management/connect/overview).
-
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png)
-
-To register a remote cluster we need kubeconfig of the cluster, `gcloud` cli tool and some RBAC settings.
-
-Before we begin I will set permissive RBAC permissions
-
 ```
 $ kubectl create clusterrolebinding permissive-binding \
   --clusterrole=cluster-admin \
@@ -79,70 +65,72 @@ $ kubectl create clusterrolebinding permissive-binding \
   --group=system:serviceaccounts
 ```
 
-Then I need to install Cloud SDK. This will install `gcloud` cli tool. See [here](https://cloud.google.com/sdk/install) for installation procedure on Mac, Linux and Windows.
-We will continue with Ubuntu installation.
-
-Add the Cloud SDK distribution URI as a package source
+Grant the cluster-admin RBAC role
 ```
-$ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+kubectl auth can-i '*' '*' --all-namespaces
 ```
 
-Make sure apt-transport is installed
+### Creating a EKS cluster in AWS
+
+I installed an EKS cluster using `eksctl` cli tool. Make sure [aws credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) are configured on your station.
+
+Create a working directory
 
 ```
-$ sudo apt-get install apt-transport-https ca-certificates gnupg
+$ mkdir ~/anthos ; cd ~/anthos
 ```
 
-Import the Google Cloud public key
-
 ```
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-```
-
-Update and install Cloud SDK
-
-```
-$ sudo apt-get update && sudo apt-get install google-cloud-sdk
-```
-
-Optional if needed, install any of these optional components:
-
-```
-google-cloud-sdk-app-engine-python
-google-cloud-sdk-app-engine-python-extras
-google-cloud-sdk-app-engine-java
-google-cloud-sdk-app-engine-go
-google-cloud-sdk-bigtable-emulator
-google-cloud-sdk-cbt
-google-cloud-sdk-cloud-build-local
-google-cloud-sdk-datalab
-google-cloud-sdk-datastore-emulator
-google-cloud-sdk-firestore-emulator
-google-cloud-sdk-pubsub-emulator
-kubectl
+$ export KUBECONFIG=eks-config
+$ eksctl create cluster \
+--name eks-cluster-1 \
+--version 1.16 \
+--nodegroup-name eks-workers \
+--node-type t3.medium \
+--node-volume-size=150 \
+--nodes 3 \
+--nodes-min 3 \
+--nodes-max 6 \
+--node-ami auto \
+--node-ami-family Ubuntu1804 \
+--ssh-access \
+--region=eu-west-3 \
+--set-kubeconfig-context=true
 ```
 
-_Note: if `kubectl` version is lower than the [minimum supported Kubernetes version](https://cloud.google.com/kubernetes-engine/docs/release-notes) of Google Kubernetes Engine (GKE), then you need to update it_
+```
+$ kubectl get nodes
+NAME                                           STATUS   ROLES    AGE   VERSION
+ip-192-168-59-157.eu-west-3.compute.internal   Ready    <none>   18h   v1.16.9
+ip-192-168-9-2.eu-west-3.compute.internal      Ready    <none>   18h   v1.16.9
+ip-192-168-90-91.eu-west-3.compute.internal    Ready    <none>   18h   v1.16.9
+
+$ kubectl get pods -A
+NAME                       READY   STATUS    RESTARTS   AGE
+aws-node-8rn5b             1/1     Running   0          18h
+aws-node-dnl8x             1/1     Running   0          18h
+aws-node-nwj6n             1/1     Running   0          18h
+coredns-84744d8475-6njk7   1/1     Running   0          18h
+coredns-84744d8475-pt8g6   1/1     Running   0          18h
+kube-proxy-6jsd7           1/1     Running   0          18h
+kube-proxy-9kxgq           1/1     Running   0          18h
+kube-proxy-jb49b           1/1     Running   0          18h
+```
+Grant the cluster-admin RBAC role
+```
+kubectl auth can-i '*' '*' --all-namespaces
+```
+
+### Creating a GKE cluster in GCP
+
+Before creating the GKE cluster, I need to create a project in GCP.
+I will use `gcloud init` command to intialise the SDK:
 
 ```
-yum -y update kubectl
+$ gcloud init
 ```
 
-I am running Kubernetes 1.16.11 so I don't need to update it.
-
-I need to authorize `gcloud` to access Google Cloud
-
-```
-gcloud auth login
-```
-
-Being a dev enviroment I preffer to install gcloud beta as well to try alpha or beta Connect features
-
-```
- gcloud components install beta
-```
-
-List the projects
+Follow the process and create a project. Then check the project creation and project id.
 
 ```
 $ gcloud projects list
@@ -151,7 +139,13 @@ dotted-ranger-283911  My First Project  482168856288
 trusty-wares-283912   Contrail          234378606342
 ```
 
-Next, I need to grant the required IAM roles to the user registering the cluster
+Choose the projects
+
+```
+$ gcloud config set project trusty-wares-283912
+```
+
+I need to grant the required IAM roles to the user registering the cluster
 
 ```
 PROJECT_ID=trusty-wares-283912
@@ -163,7 +157,7 @@ $ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
  --role=roles/resourcemanager.projectIamAdmin
 ```
 
-I enabled the APIs required for my project
+I enable the APIs required for my project
 
 ```
 gcloud services enable \
@@ -181,10 +175,65 @@ gcloud services enable \
  runtimeconfig.googleapis.com
 ```
 
-A JSON file containing Google Cloud Service Account credentials is required to manually register a cluster. Create a service account by running the following command:
+Now, I will create the GKE cluster
 
 ```
-SERVICE_ACCOUNT_NAME=contrail-cluster-1
+$ export KUBECONFIG=gke-config
+$ gcloud container clusters create gke-cluster-1 \
+--zone europe-west3-a \
+--disk-type=pd-ssd \
+--disk-size=80GB \
+--machine-type=n1-standard-1 \
+--num-nodes=3 \
+--image-type ubuntu \
+--cluster-version=1.16.11-gke.5
+```
+
+```
+kubectl create clusterrolebinding cluster-admin-binding \
+  --clusterrole cluster-admin \
+  --user $(gcloud config get-value account)
+```
+
+Because I will have to change the context often from one cluster to another, I will merge all the contexs into one configuration
+
+Copy the $HOME/.kube/config from on-prem cluster on my mac as `contrail-config` in `~/.kube`.
+
+Copy the eks and gke configs in the same directory
+
+```
+$ cp *-config ~/.kube
+$ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config
+$ kubectl config view --merge --flatten &gt; $HOME/.kube/config
+$ export KUBECONFIG=
+
+$ kubectx gke_trusty-wares-283912_europe-west3-a_gke-cluster-1
+$ kubectx gke=.
+
+$ kubectx iam-root-account@eks-cluster-1.eu-west-3.eksctl.io
+$ kubectx eks=.
+
+$ kubectx kubernetes-admin@kubernetes
+$ kubectx contrail=.
+```
+
+Now we have three context representing the clusters
+
+```
+$ kubectx
+gke
+eks
+contrail
+```
+
+### Configure the GCP account for Anthos
+
+Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (on-prem and EKS) to connect to Anthos
+
+```
+$ PROJECT_ID=trusty-wares-283912
+$ SERVICE_ACCOUNT_NAME=anthos-connect
+
 $ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT_ID}
 ```
 
@@ -196,34 +245,38 @@ $ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
  --role="roles/gkehub.connect"
 ```
 
-Download the service account's private key JSON file. You use this file in the next section:
+Create the service account's private key JSON file in current directory. I will need this file for registering the clusters:
 ```
-$ gcloud iam service-accounts keys create /tmp/creds/contrail-cluster-1-trusty-wares-283912.json \
+$ gcloud iam service-accounts keys create ./${SERVICE_ACCOUNT_NAME}-svc.json \
   --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
   --project=${PROJECT_ID}
 ```
 
-Grant the cluster-admin RBAC role to the user registering the cluster
+### Register an External Kubernetes Cluster to GKE Connect
+
+Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details [here](https://cloud.google.com/anthos/multicluster-management/connect/overview).
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png)
+
+
+To register a non-GKE clusters we need to run the following command
+
+For on-prem Contrail cluster:
 
 ```
-kubectl auth can-i '*' '*' --all-namespaces
-```
-
-To register a non-GKE cluster we need to run the following command
-
-```
-MEMBERSHIP_NAME=contrail-cluster-1
-
-gcloud container hub memberships register ${MEMBERSHIP_NAME} \
+gcloud container hub memberships register contrail-cluster-1 \
    --project=${PROJECT_ID} \
-   --context=$(kubectl config current-context) \
+   --context=contrail \
    --kubeconfig=$HOME/.kube/config \
-   --service-account-key-file=/tmp/creds/contrail-cluster-1-trusty-wares-283912.json
+   --service-account-key-file=./anthos-connect-svc.json
 ```
 
 
 When the command finishes a new pod called gke-connect-agent will run in the cluster. This is responsabile to communication with GKE Hub as I decribed above.
 ```
+$ kubectx contrail
+Switched to context "contrail".
+
 $ kubectl get pods -A
 NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
 gke-connect   gke-connect-agent-20200717-00-00-58c749c9d7-l9v66   1/1     Running   0          23m
@@ -255,21 +308,60 @@ kube-system   redis-xlzvb                                         1/1     Runnin
 
 _Note: I need SNAT enabled in Contrail to allow gke-connect-agent communication to internet_
 
+The same for the EKS cluster
+
+```
+gcloud container hub memberships register eks-cluster-1 \
+   --project=${PROJECT_ID} \
+   --context=eks \
+   --kubeconfig=$HOME/.kube/config \
+   --service-account-key-file=./anthos-connect-svc.json
+```
+The same `gke-connect-agent` will be installed like on on-prem cluster
+
+```
+$ kubectx eks
+Switched to context "eks".
+
+$ kubectl get pods -A
+NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
+gke-connect   gke-connect-agent-20200724-01-00-57895588b7-c6flv   1/1     Running   0          125m
+kube-system   aws-node-8rn5b                                      1/1     Running   0          19h
+kube-system   aws-node-dnl8x                                      1/1     Running   0          19h
+kube-system   aws-node-nwj6n                                      1/1     Running   0          19h
+kube-system   coredns-84744d8475-6njk7                            1/1     Running   0          19h
+kube-system   coredns-84744d8475-pt8g6                            1/1     Running   0          19h
+kube-system   kube-proxy-6jsd7                                    1/1     Running   0          19h
+kube-system   kube-proxy-9kxgq                                    1/1     Running   0          19h
+kube-system   kube-proxy-jb49b                                    1/1     Running   0          19h
+```
+
+And the GKE cluster
+
+```
+gcloud container hub memberships register gke-cluster-1 \
+--project=${PROJECT_ID} \
+--gke-cluster=europe-west3-a/gke-cluster-1 \
+--service-account-key-file=./anthos-connect-svc.json
+```
+
 I can view cluster registration status and all the clusters within my Google project
 
 ```
 $ gcloud container hub memberships list
 NAME                EXTERNAL_ID
-cluster-1           1aac8a94-9f25-4559-bdc6-a663f25417c2
+NAME                EXTERNAL_ID
 contrail-cluster-1  da221221-0f05-491c-8fe2-2eb4452a593d
+gke-cluster-1       193af6eb-790b-444b-9eb0-62f03ace7c76
+eks-cluster-1       6418ecdc-cf0e-448b-ade7-1d32a892309c
 ```
 
-To login to the cluster from the Cloud Console I will use a bearer token. For this I create a Kubernetes service account (KSA) in the cluster.
+To login to the external clusters from the Google Anthos Console I will use a bearer token. For this I will create a Kubernetes service account (KSA) in the cluster.
 
 I am creating and applying first a  node-reader role-based access control (RBAC) role
 
 ```
-cat <<EOF > node-reader.yaml
+$ cat <<EOF > node-reader.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -279,27 +371,34 @@ rules:
   resources: ["nodes"]
   verbs: ["get", "list", "watch"]
 EOF
-kubectl apply -f node-reader.yaml
+
+$ kubectx contrail
+
+$ kubectl apply -f node-reader.yaml
 ```
 
 Create and authorise a KSA.
 
 ```
-KSA_NAME=contrail-cluster-1-sa
-kubectl create serviceaccount ${KSA_NAME}
-kubectl create clusterrolebinding ksa-view --clusterrole view --serviceaccount default:${KSA_NAME}
-kubectl create clusterrolebinding ksa-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
-kubectl create clusterrolebinding binding-account --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
+$ KSA_NAME=anthos-sa
+$ kubectl create serviceaccount ${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-view --clusterrole view --serviceaccount default:${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
+$ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
 ```
 
 To acquire the KSA's bearer token, run the following command:
 
 ```
-SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath='{$.secrets[0].name}')
-kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
+$ SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath='{$.secrets[0].name}')
+$ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
 ```
 
 The output token use it in Cloud Console to Login to the cluster
+
+
+
+
 
 The clusters should be visibile in Anthos
 
