@@ -434,7 +434,7 @@ Active namespace is "application-system".
 To pull the images from GCR, we need to create a service account and download the associated JSON token
 
 ```
-$ PROJECT="trusty-wares-283912"
+$ PROJECT=trusty-wares-283912
 
 $ gcloud iam service-accounts create gcr-sa \
 	--project=${PROJECT}
