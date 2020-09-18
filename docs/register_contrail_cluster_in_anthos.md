@@ -203,9 +203,7 @@ Copy the eks and gke configs in the same directory
 
 ```
 $ cp *-config ~/.kube
-$ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config
-$ kubectl config view --merge --flatten &gt; $HOME/.kube/config
-$ export KUBECONFIG=
+$ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config kubectl config view --merge --flatten > $HOME/.kube/config
 
 $ kubectx gke_trusty-wares-283912_europe-west3-a_gke-cluster-1
 $ kubectx gke=.
