@@ -18,44 +18,76 @@ _Note: if `kubectl` version is lower than the [minimum supported Kubernetes vers
 
 I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
 
-In this case, I installed Kubernetes 1.16.11 on Ubuntu 18.04 OS.
+In this case, I installed Kubernetes 1.18.9 on Ubuntu 18.04 OS.
 
 ```
 $ kubectl get nodes -o wide
-NAME                      STATUS   ROLES    AGE   VERSION    INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
-r9-ru24.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.114   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
-r9-ru25.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.113   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
-r9-ru26.csa.juniper.net   Ready    master   16h   v1.16.11   192.168.213.112   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
+NAME          STATUS   ROLES    AGE   VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+k8s-master1   Ready    master   19h   v1.18.9   172.16.125.115   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
+k8s-master2   Ready    master   19h   v1.18.9   172.16.125.116   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
+k8s-master3   Ready    master   19h   v1.18.9   172.16.125.117   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
+k8s-node1     Ready    <none>   19h   v1.18.9   172.16.125.118   <none>        Ubuntu 18.04.5 LTS   4.15.0-112-generic   docker://18.9.9
+k8s-node2     Ready    <none>   19h   v1.18.9   172.16.125.119   <none>        Ubuntu 18.04.5 LTS   4.15.0-112-generic   docker://18.9.9
 ```
 
 After the Kubernetes cluster is deployed, I installed Contrail using single yaml file.
 ```
 $ kubectl get po -n kube-system
-NAME                                              READY   STATUS    RESTARTS   AGE
-config-zookeeper-6kqsf                            1/1     Running   0          16h
-contrail-agent-qpxqd                              3/3     Running   0          16h
-contrail-agent-vrcsl                              3/3     Running   0          16h
-contrail-agent-xvbhq                              3/3     Running   0          16h
-contrail-analytics-alarm-m7rhg                    4/4     Running   0          16h
-contrail-analytics-mnx2q                          4/4     Running   0          16h
-contrail-analytics-snmp-v5dzj                     4/4     Running   0          16h
-contrail-analyticsdb-z6cfm                        4/4     Running   0          16h
-contrail-configdb-jp9sg                           3/3     Running   0          16h
-contrail-controller-config-7zn25                  6/6     Running   0          16h
-contrail-controller-control-7nf97                 5/5     Running   0          16h
-contrail-controller-webui-7xgp7                   2/2     Running   0          16h
-contrail-kube-manager-qqh52                       1/1     Running   0          16h
-coredns-5644d7b6d9-njzsm                          1/1     Running   0          16h
-coredns-5644d7b6d9-rfn8t                          1/1     Running   0          16h
-etcd-r9-ru26.csa.juniper.net                      1/1     Running   0          16h
-kube-apiserver-r9-ru26.csa.juniper.net            1/1     Running   0          16h
-kube-controller-manager-r9-ru26.csa.juniper.net   1/1     Running   0          16h
-kube-proxy-nkh65                                  1/1     Running   0          16h
-kube-proxy-nvmwd                                  1/1     Running   0          16h
-kube-proxy-xqrsd                                  1/1     Running   0          16h
-kube-scheduler-r9-ru26.csa.juniper.net            1/1     Running   0          16h
-rabbitmq-f4tws                                    1/1     Running   0          16h
-redis-xlzvb                                       1/1     Running   0          16h
+NAME                                  READY   STATUS    RESTARTS   AGE
+config-zookeeper-4klts                1/1     Running   0          19h
+config-zookeeper-cs2fk                1/1     Running   0          19h
+config-zookeeper-wgrtb                1/1     Running   0          19h
+contrail-agent-ch8kv                  3/3     Running   2          19h
+contrail-agent-kh9cf                  3/3     Running   1          19h
+contrail-agent-kqtmz                  3/3     Running   0          19h
+contrail-agent-m6nrz                  3/3     Running   1          19h
+contrail-agent-qgzxt                  3/3     Running   3          19h
+contrail-analytics-6666s              4/4     Running   1          19h
+contrail-analytics-jrl5x              4/4     Running   4          19h
+contrail-analytics-x756g              4/4     Running   4          19h
+contrail-configdb-2h7kd               3/3     Running   4          19h
+contrail-configdb-d57tb               3/3     Running   4          19h
+contrail-configdb-zpmsq               3/3     Running   4          19h
+contrail-controller-config-c2226      6/6     Running   9          19h
+contrail-controller-config-pbbmz      6/6     Running   5          19h
+contrail-controller-config-zqkm6      6/6     Running   4          19h
+contrail-controller-control-2kz4c     5/5     Running   2          19h
+contrail-controller-control-k522d     5/5     Running   0          19h
+contrail-controller-control-nr54m     5/5     Running   2          19h
+contrail-controller-webui-5vxl7       2/2     Running   0          19h
+contrail-controller-webui-mzpdv       2/2     Running   1          19h
+contrail-controller-webui-p8rc2       2/2     Running   1          19h
+contrail-kube-manager-88c4f           1/1     Running   0          19h
+contrail-kube-manager-fsz2z           1/1     Running   0          19h
+contrail-kube-manager-qc27b           1/1     Running   0          19h
+coredns-684f7f6cb4-4mmgc              1/1     Running   0          93m
+coredns-684f7f6cb4-dvpjk              1/1     Running   0          107m
+coredns-684f7f6cb4-m6sj7              1/1     Running   0          84m
+coredns-684f7f6cb4-nfkfh              1/1     Running   0          84m
+coredns-684f7f6cb4-tk48d              1/1     Running   0          86m
+etcd-k8s-master1                      1/1     Running   0          94m
+etcd-k8s-master2                      1/1     Running   0          95m
+etcd-k8s-master3                      1/1     Running   0          92m
+kube-apiserver-k8s-master1            1/1     Running   0          94m
+kube-apiserver-k8s-master2            1/1     Running   0          95m
+kube-apiserver-k8s-master3            1/1     Running   0          92m
+kube-controller-manager-k8s-master1   1/1     Running   0          94m
+kube-controller-manager-k8s-master2   1/1     Running   0          95m
+kube-controller-manager-k8s-master3   1/1     Running   0          92m
+kube-proxy-975tn                      1/1     Running   0          108m
+kube-proxy-9qzc9                      1/1     Running   0          108m
+kube-proxy-fgwqt                      1/1     Running   0          109m
+kube-proxy-n6nnq                      1/1     Running   0          109m
+kube-proxy-wf289                      1/1     Running   0          108m
+kube-scheduler-k8s-master1            1/1     Running   0          94m
+kube-scheduler-k8s-master2            1/1     Running   0          95m
+kube-scheduler-k8s-master3            1/1     Running   0          90m
+rabbitmq-82lmk                        1/1     Running   0          19h
+rabbitmq-b2lz8                        1/1     Running   0          19h
+rabbitmq-f2nfc                        1/1     Running   0          19h
+redis-42tkr                           1/1     Running   0          19h
+redis-bj76v                           1/1     Running   0          19h
+redis-ctzhg                           1/1     Running   0          19h
 ```
 ```
 $ kubectl create clusterrolebinding permissive-binding \
@@ -134,21 +166,18 @@ Follow the process and create a project. Then check the project creation and pro
 
 ```
 $ gcloud projects list
-PROJECT_ID            NAME              PROJECT_NUMBER
-dotted-ranger-283911  My First Project  482168856288
-trusty-wares-283912   Contrail          234378606342
 ```
 
-Choose the projects
+Choose the project
 
 ```
-$ gcloud config set project trusty-wares-283912
+$ gcloud config set project contrail-k8s-289615
 ```
 
 I need to grant the required IAM roles to the user registering the cluster
 
 ```
-PROJECT_ID=trusty-wares-283912
+PROJECT_ID=contrail-k8s-289615
 $ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
  --member user:[GCP_EMAIL_ADDRESS] \
  --role=roles/gkehub.admin \
@@ -180,13 +209,13 @@ Now, I will create the GKE cluster
 ```
 $ export KUBECONFIG=gke-config
 $ gcloud container clusters create gke-cluster-1 \
---zone europe-west3-a \
---disk-type=pd-ssd \
---disk-size=80GB \
---machine-type=n1-standard-1 \
+--zone "europe-west2-a" \
+--disk-type "pd-ssd" \
+--disk-size "150GB" \
+--machine-type "n2-standard-2" \
 --num-nodes=3 \
---image-type ubuntu \
---cluster-version=1.16.11-gke.5
+--image-type "COS" \
+--cluster-version "1.17.9-gke.1504"
 ```
 
 ```
@@ -205,14 +234,14 @@ Copy the eks and gke configs in the same directory
 $ cp *-config ~/.kube
 $ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config kubectl config view --merge --flatten > $HOME/.kube/config
 
-$ kubectx gke_trusty-wares-283912_europe-west3-a_gke-cluster-1
+$ kubectx gke_contrail-k8s-289615_europe-west3-a_gke-cluster-1
 $ kubectx gke=.
 
 $ kubectx iam-root-account@eks-cluster-1.eu-west-3.eksctl.io
 $ kubectx eks=.
 
 $ kubectx kubernetes-admin@kubernetes
-$ kubectx contrail=.
+$ kubectx onprem-k8s-contrail=.
 ```
 
 Now we have three context representing the clusters
@@ -221,7 +250,7 @@ Now we have three context representing the clusters
 $ kubectx
 gke
 eks
-contrail
+onprem-k8s-contrail
 ```
 
 ### Configure the GCP account for Anthos
@@ -229,7 +258,7 @@ contrail
 Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (on-prem and EKS) to connect to Anthos
 
 ```
-$ PROJECT_ID=trusty-wares-283912
+$ PROJECT_ID=contrail-k8s-289615
 $ SERVICE_ACCOUNT_NAME=anthos-connect
 
 $ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT_ID}
@@ -264,7 +293,7 @@ For on-prem Contrail cluster:
 ```
 gcloud container hub memberships register contrail-cluster-1 \
    --project=${PROJECT_ID} \
-   --context=contrail \
+   --context=onprem-k8s-contrail \
    --kubeconfig=$HOME/.kube/config \
    --service-account-key-file=./anthos-connect-svc.json
 ```
@@ -272,36 +301,12 @@ gcloud container hub memberships register contrail-cluster-1 \
 
 When the command finishes a new pod called gke-connect-agent will run in the cluster. This is responsabile to communication with GKE Hub as I decribed above.
 ```
-$ kubectx contrail
-Switched to context "contrail".
+$ kubectx conprem-k8s-contrail
+Switched to context "onprem-k8s-contrail".
 
-$ kubectl get pods -A
-NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
-gke-connect   gke-connect-agent-20200717-00-00-58c749c9d7-l9v66   1/1     Running   0          23m
-kube-system   config-zookeeper-6kqsf                              1/1     Running   0          16h
-kube-system   contrail-agent-qpxqd                                3/3     Running   0          16h
-kube-system   contrail-agent-vrcsl                                3/3     Running   0          16h
-kube-system   contrail-agent-xvbhq                                3/3     Running   0          16h
-kube-system   contrail-analytics-alarm-m7rhg                      4/4     Running   0          16h
-kube-system   contrail-analytics-mnx2q                            4/4     Running   0          16h
-kube-system   contrail-analytics-snmp-v5dzj                       4/4     Running   0          16h
-kube-system   contrail-analyticsdb-z6cfm                          4/4     Running   0          16h
-kube-system   contrail-configdb-jp9sg                             3/3     Running   0          16h
-kube-system   contrail-controller-config-7zn25                    6/6     Running   0          16h
-kube-system   contrail-controller-control-7nf97                   5/5     Running   0          16h
-kube-system   contrail-controller-webui-7xgp7                     2/2     Running   0          16h
-kube-system   contrail-kube-manager-qqh52                         1/1     Running   0          16h
-kube-system   coredns-5644d7b6d9-njzsm                            1/1     Running   0          16h
-kube-system   coredns-5644d7b6d9-rfn8t                            1/1     Running   0          16h
-kube-system   etcd-r9-ru26.csa.juniper.net                        1/1     Running   0          16h
-kube-system   kube-apiserver-r9-ru26.csa.juniper.net              1/1     Running   0          16h
-kube-system   kube-controller-manager-r9-ru26.csa.juniper.net     1/1     Running   0          16h
-kube-system   kube-proxy-nkh65                                    1/1     Running   0          16h
-kube-system   kube-proxy-nvmwd                                    1/1     Running   0          16h
-kube-system   kube-proxy-xqrsd                                    1/1     Running   0          16h
-kube-system   kube-scheduler-r9-ru26.csa.juniper.net              1/1     Running   0          16h
-kube-system   rabbitmq-f4tws                                      1/1     Running   0          16h
-kube-system   redis-xlzvb                                         1/1     Running   0          16h
+$ kubectl get pods -n gke-connect
+NAMESPACE      NAME                                               READY   STATUS      RESTARTS   AGE
+gke-connect    gke-connect-agent-20200918-01-00-7bc77884d-st4r2   1/1     Running     0          45m
 ```
 
 _Note: I need SNAT enabled in Contrail to allow gke-connect-agent communication to internet_
@@ -321,17 +326,9 @@ The same `gke-connect-agent` will be installed like on on-prem cluster
 $ kubectx eks
 Switched to context "eks".
 
-$ kubectl get pods -A
+$ kubectl get pods -n gke-connect
 NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
 gke-connect   gke-connect-agent-20200724-01-00-57895588b7-c6flv   1/1     Running   0          125m
-kube-system   aws-node-8rn5b                                      1/1     Running   0          19h
-kube-system   aws-node-dnl8x                                      1/1     Running   0          19h
-kube-system   aws-node-nwj6n                                      1/1     Running   0          19h
-kube-system   coredns-84744d8475-6njk7                            1/1     Running   0          19h
-kube-system   coredns-84744d8475-pt8g6                            1/1     Running   0          19h
-kube-system   kube-proxy-6jsd7                                    1/1     Running   0          19h
-kube-system   kube-proxy-9kxgq                                    1/1     Running   0          19h
-kube-system   kube-proxy-jb49b                                    1/1     Running   0          19h
 ```
 
 And the GKE cluster
@@ -432,7 +429,7 @@ Active namespace is "application-system".
 To pull the images from GCR, we need to create a service account and download the associated JSON token
 
 ```
-$ PROJECT_ID=trusty-wares-283912
+$ PROJECT_ID=contrail-k8s-289615
 
 $ gcloud iam service-accounts create gcr-sa \
 	--project=${PROJECT_ID}
