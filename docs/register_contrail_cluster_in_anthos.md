@@ -432,21 +432,21 @@ Active namespace is "application-system".
 To pull the images from GCR, we need to create a service account and download the associated JSON token
 
 ```
-$ PROJECT=trusty-wares-283912
+$ PROJECT_ID=trusty-wares-283912
 
 $ gcloud iam service-accounts create gcr-sa \
-	--project=${PROJECT}
+	--project=${PROJECT_ID}
 
 $ gcloud iam service-accounts list \
-	--project=${PROJECT}
+	--project=${PROJECT_ID}
 
-$ gcloud projects add-iam-policy-binding ${PROJECT} \
- --member="serviceAccount:gcr-sa@${PROJECT}.iam.gserviceaccount.com" \
+$ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+ --member="serviceAccount:gcr-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
  --role="roles/storage.objectViewer"
 
 $ gcloud iam service-accounts keys create ./gcr-sa.json \
-  --iam-account="gcr-sa@${PROJECT}.iam.gserviceaccount.com" \
-  --project=${PROJECT}
+  --iam-account="gcr-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --project=${PROJECT_ID}
 ```
 
 Create a secret with the contents of the token
