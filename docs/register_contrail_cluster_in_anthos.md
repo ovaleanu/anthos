@@ -196,15 +196,18 @@ I enable the APIs required for my project
 gcloud services enable \
  --project=${PROJECT_ID} \
  container.googleapis.com \
+ compute.googleapis.com \
  gkeconnect.googleapis.com \
  gkehub.googleapis.com \
  cloudresourcemanager.googleapis.com \
+ cloudtrace.googleapis.com \
  anthos.googleapis.com \
  iamcredentials.googleapis.com \
  meshca.googleapis.com \
  meshconfig.googleapis.com \
  meshtelemetry.googleapis.com \
  monitoring.googleapis.com \
+ logging.googleapis.com \
  runtimeconfig.googleapis.com
 ```
 
