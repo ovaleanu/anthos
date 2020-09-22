@@ -331,6 +331,7 @@ $ kubectl get pods -n gke-connect
 NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
 gke-connect   gke-connect-agent-20200724-01-00-57895588b7-c6flv   1/1     Running   0          125m
 ```
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image22.png)
 
 And the GKE cluster
 
@@ -405,7 +406,6 @@ $ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-a
 $ SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath='{$.secrets[0].name}')
 $ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
 ```
-
 
 The clusters should be visibile in Anthos
 
