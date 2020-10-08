@@ -5,8 +5,8 @@ This is version 2 of this [doc](https://github.com/ovaleanujnpr/anthos/blob/mast
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.svc)
 
+(https://cloud.google.com/anthos/images/anthos-14-components.svg)
 
 
 The scope of this document is integrate a on-prem K8s runing with Contrail together with an OpenShift4.4 with Contrail clusters running in AWS and a native GKE cluster in GCP Anthos.
