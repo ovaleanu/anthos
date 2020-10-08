@@ -3,6 +3,11 @@
 This is version 2 of this [doc](https://github.com/ovaleanujnpr/anthos/blob/master/docs/register_contrail_cluster__and_eks_in_anthos.md) replacing the EKS cluster with an OpenShift4 with Contrail runing in AWS and using a HA K8s cluster with Contrail on-prem.
 
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
+The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
+
+
+
 The scope of this document is integrate a on-prem K8s runing with Contrail together with an OpenShift4.4 with Contrail clusters running in AWS and a native GKE cluster in GCP Anthos.
 
 Fun fact Anthos is flower in Greek. The reason they chose that is because flowers grow on premise, but they need rain from the cloud to flourish.
