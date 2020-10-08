@@ -25,13 +25,17 @@
 <p>This is version 2 of this <a href="https://github.com/ovaleanujnpr/anthos/blob/master/docs/register_contrail_cluster__and_eks_in_anthos.md">doc</a> replacing the EKS cluster with an OpenShift4 with Contrail runing in AWS and using a HA K8s cluster with Contrail on-prem.</p>
 <p>Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos&apos;s functionality across your environments, from infrastructure management to facilitating application development.</p>
-<p><a href="https://cloud.google.com/anthos/images/anthos-14-components.svg">https://cloud.google.com/anthos/images/anthos-14-components.svg</a></p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png" alt>
+Reference <a href="https://cloud.google.com/anthos/docs/concepts/overview">https://cloud.google.com/anthos/docs/concepts/overview</a></p>
 <p>The scope of this document is integrate a on-prem K8s runing with Contrail together with an OpenShift4.4 with Contrail clusters running in AWS and a native GKE cluster in GCP Anthos.</p>
 <p>Fun fact Anthos is flower in Greek. The reason they chose that is because flowers grow on premise, but they need rain from the cloud to flourish.</p>
 <p>Google Cloud Platform console provides a single control plane for managing Kubernetes clusters deployed in multiple locations.</p>
 <p>As prerequisites, I will need to install GCP cli tolls from Cloud SDK package, <a href="https://cloud.google.com/sdk/docs/quickstart-macos">Install Cloud SDK on macOS</a>, <code>kubectl</code> and because we will have three different clusters <a href="https://github.com/ahmetb/kubectx"><code>kubectx</code> and <code>kubens</code></a> are useful tools to managae them easily.</p>
 <p><em>Note: if <code>kubectl</code> version is lower than the <a href="https://cloud.google.com/kubernetes-engine/docs/release-notes">minimum supported Kubernetes version</a> of Google Kubernetes Engine (GKE), then you need to update it</em></p>
-<h2 id="creating-kubernetes-clusters">Creating Kubernetes clusters</h2>
+<ul>
+<li><input disabled type="checkbox"> <h2 id="creating-kubernetes-clusters">Creating Kubernetes clusters</h2>
+</li>
+</ul>
 <h3 id="creating-on-prem-kubernetes-cluster-using-contrail-sdn">Creating on-prem Kubernetes cluster using Contrail SDN</h3>
 <p>I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this <a href="https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail">Wiki</a>.</p>
 <p>In this case, I installed Kubernetes 1.18.9 on Ubuntu 18.04 OS.</p>
