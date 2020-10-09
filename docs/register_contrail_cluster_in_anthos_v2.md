@@ -312,7 +312,7 @@ onprem-k8s-contrail
 
 ### Configure the GCP account for Anthos
 
-Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (on-prem and OpenShift4) to connect to Anthos
+Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (On-premises and EKS) to connect to Anthos
 
 ```
 $ PROJECT_ID=contrail-k8s-289615
