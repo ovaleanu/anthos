@@ -27,7 +27,7 @@ The following diagram shows Anthos components and features and how they provide 
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png" alt>
 Reference <a href="https://cloud.google.com/anthos/docs/concepts/overview">https://cloud.google.com/anthos/docs/concepts/overview</a></p>
 <p>The scope of this document is integrate a on-prem K8s runing with Contrail together with an EKS with Contrail cluster and a native GKE cluster in GCP Anthos.
-So, in my case I will have one GKE on Google Cloud and two attached clusters, Kubernetes with Contrail running on-prem and EKS 4 with Contrail running in AWS.
+So, in my case I will have one GKE on Google Cloud and two attached clusters, Kubernetes with Contrail running on-prem and EKS with Contrail running in AWS.
 Acording with the diagram for an attached cluster, Anthos has the following components:</p>
 <ol>
 <li>Multi-cluster Management: Connect, Environ</li>
@@ -231,7 +231,7 @@ $ gcloud container clusters create gke-cluster-1 \
 <pre><code>$ cp *-config ~/.kube
 $ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config kubectl config view --merge --flatten &gt; $HOME/.kube/config
 
-$ kubectx gke_contrail-k8s-289615_europe-west2-a_gke-cluster-1
+$ kubectx gke_contrail-k8s-289615_europe-west2-b_gke-cluster-1
 $ kubectx gke=.
 
 $ kubectx arn:aws:eks:eu-central-1:927874460243:cluster/EKS-YC0U0TU5
@@ -303,7 +303,7 @@ rules:
   verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;]
 EOF
 
-$ kubectx contrail
+$ kubectx onpremk8s-contrail-cluster-1
 
 $ kubectl apply -f node-reader.yaml</code></pre><p>Create and authorise a KSA.</p>
 <pre><code>$ KSA_NAME=anthos-sa
