@@ -1,100 +1,72 @@
-# Integrate a Kubernetes and OpenShift4 cluster with Contrail in Google Anthos
-
-This is version 2 of this [doc](https://github.com/ovaleanujnpr/anthos/blob/master/docs/register_contrail_cluster__and_eks_in_anthos.md) replacing the EKS cluster with an OpenShift4 with Contrail runing in AWS and using a HA K8s cluster with Contrail on-prem.
+# Integrate a Kubernetes cluster with Contrail in Google Anthos
 
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
 Reference https://cloud.google.com/anthos/docs/concepts/overview
+The scope of this document is integrate an on-prem K8s runing with Contrail toghther with a GKE and EKS cluster in GCP Anthos.
 
-The scope of this document is integrate a on-prem K8s runing with Contrail together with an OpenShift4.4 with Contrail clusters running in AWS and a native GKE cluster in GCP Anthos.
+Acording with the diagram for an attached cluster, Anthos has the following components:
+
+1. Multicluster Management: Environ, Connect
+2. Configuration Management: Anthos Config Management, Policy Controller
+3. Service Management: Anthos Service Mesh
+
+I will test each component from Anthos with my Contrail attached clusters.
 
 Fun fact Anthos is flower in Greek. The reason they chose that is because flowers grow on premise, but they need rain from the cloud to flourish.
 
-Google Cloud Platform console provides a single control plane for managing Kubernetes clusters deployed in multiple locations.
 
-As prerequisites, I will need to install GCP cli tolls from Cloud SDK package, [Install Cloud SDK on macOS](https://cloud.google.com/sdk/docs/quickstart-macos), `kubectl` and because we will have three different clusters [`kubectx` and `kubens`](https://github.com/ahmetb/kubectx) are useful tools to managae them easily.
+As prerequisites, I will need to install GCP cli tolls from Cloud SDK package, [Install Cloud SDK on macOS](https://cloud.google.com/sdk/docs/quickstart-macos), [`eksctl` cli tool](https://eksctl.io/introduction/#getting-started) for creating EKS cluster on AWS, `kubectl` and because we will have three different clusters [`kubectx` and `kubens`](https://github.com/ahmetb/kubectx) are useful tools to managae them easily.
 
 _Note: if `kubectl` version is lower than the [minimum supported Kubernetes version](https://cloud.google.com/kubernetes-engine/docs/release-notes) of Google Kubernetes Engine (GKE), then you need to update it_
 
-- [ ] ## Creating Kubernetes clusters
+## Creating Kubernetes clusters
 
 ### Creating on-prem Kubernetes cluster using Contrail SDN
 
 
 I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
 
-In this case, I installed Kubernetes 1.18.9 on Ubuntu 18.04 OS.
+In this case, I installed Kubernetes 1.16.11 on Ubuntu 18.04 OS.
 
 ```
 $ kubectl get nodes -o wide
-NAME          STATUS   ROLES    AGE   VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
-k8s-master1   Ready    master   19h   v1.18.9   172.16.125.115   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
-k8s-master2   Ready    master   19h   v1.18.9   172.16.125.116   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
-k8s-master3   Ready    master   19h   v1.18.9   172.16.125.117   <none>        Ubuntu 18.04.5 LTS   4.15.0-118-generic   docker://18.9.9
-k8s-node1     Ready    <none>   19h   v1.18.9   172.16.125.118   <none>        Ubuntu 18.04.5 LTS   4.15.0-112-generic   docker://18.9.9
-k8s-node2     Ready    <none>   19h   v1.18.9   172.16.125.119   <none>        Ubuntu 18.04.5 LTS   4.15.0-112-generic   docker://18.9.9
+NAME                      STATUS   ROLES    AGE   VERSION    INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+r9-ru24.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.114   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
+r9-ru25.csa.juniper.net   Ready    <none>   16h   v1.16.11   192.168.213.113   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
+r9-ru26.csa.juniper.net   Ready    master   16h   v1.16.11   192.168.213.112   <none>        Ubuntu 18.04.4 LTS   4.15.0-108-generic   docker://18.9.9
 ```
 
 After the Kubernetes cluster is deployed, I installed Contrail using single yaml file.
 ```
 $ kubectl get po -n kube-system
-NAME                                  READY   STATUS    RESTARTS   AGE
-config-zookeeper-4klts                1/1     Running   0          19h
-config-zookeeper-cs2fk                1/1     Running   0          19h
-config-zookeeper-wgrtb                1/1     Running   0          19h
-contrail-agent-ch8kv                  3/3     Running   2          19h
-contrail-agent-kh9cf                  3/3     Running   1          19h
-contrail-agent-kqtmz                  3/3     Running   0          19h
-contrail-agent-m6nrz                  3/3     Running   1          19h
-contrail-agent-qgzxt                  3/3     Running   3          19h
-contrail-analytics-6666s              4/4     Running   1          19h
-contrail-analytics-jrl5x              4/4     Running   4          19h
-contrail-analytics-x756g              4/4     Running   4          19h
-contrail-configdb-2h7kd               3/3     Running   4          19h
-contrail-configdb-d57tb               3/3     Running   4          19h
-contrail-configdb-zpmsq               3/3     Running   4          19h
-contrail-controller-config-c2226      6/6     Running   9          19h
-contrail-controller-config-pbbmz      6/6     Running   5          19h
-contrail-controller-config-zqkm6      6/6     Running   4          19h
-contrail-controller-control-2kz4c     5/5     Running   2          19h
-contrail-controller-control-k522d     5/5     Running   0          19h
-contrail-controller-control-nr54m     5/5     Running   2          19h
-contrail-controller-webui-5vxl7       2/2     Running   0          19h
-contrail-controller-webui-mzpdv       2/2     Running   1          19h
-contrail-controller-webui-p8rc2       2/2     Running   1          19h
-contrail-kube-manager-88c4f           1/1     Running   0          19h
-contrail-kube-manager-fsz2z           1/1     Running   0          19h
-contrail-kube-manager-qc27b           1/1     Running   0          19h
-coredns-684f7f6cb4-4mmgc              1/1     Running   0          93m
-coredns-684f7f6cb4-dvpjk              1/1     Running   0          107m
-coredns-684f7f6cb4-m6sj7              1/1     Running   0          84m
-coredns-684f7f6cb4-nfkfh              1/1     Running   0          84m
-coredns-684f7f6cb4-tk48d              1/1     Running   0          86m
-etcd-k8s-master1                      1/1     Running   0          94m
-etcd-k8s-master2                      1/1     Running   0          95m
-etcd-k8s-master3                      1/1     Running   0          92m
-kube-apiserver-k8s-master1            1/1     Running   0          94m
-kube-apiserver-k8s-master2            1/1     Running   0          95m
-kube-apiserver-k8s-master3            1/1     Running   0          92m
-kube-controller-manager-k8s-master1   1/1     Running   0          94m
-kube-controller-manager-k8s-master2   1/1     Running   0          95m
-kube-controller-manager-k8s-master3   1/1     Running   0          92m
-kube-proxy-975tn                      1/1     Running   0          108m
-kube-proxy-9qzc9                      1/1     Running   0          108m
-kube-proxy-fgwqt                      1/1     Running   0          109m
-kube-proxy-n6nnq                      1/1     Running   0          109m
-kube-proxy-wf289                      1/1     Running   0          108m
-kube-scheduler-k8s-master1            1/1     Running   0          94m
-kube-scheduler-k8s-master2            1/1     Running   0          95m
-kube-scheduler-k8s-master3            1/1     Running   0          90m
-rabbitmq-82lmk                        1/1     Running   0          19h
-rabbitmq-b2lz8                        1/1     Running   0          19h
-rabbitmq-f2nfc                        1/1     Running   0          19h
-redis-42tkr                           1/1     Running   0          19h
-redis-bj76v                           1/1     Running   0          19h
-redis-ctzhg                           1/1     Running   0          19h
+NAME                                              READY   STATUS    RESTARTS   AGE
+config-zookeeper-6kqsf                            1/1     Running   0          16h
+contrail-agent-qpxqd                              3/3     Running   0          16h
+contrail-agent-vrcsl                              3/3     Running   0          16h
+contrail-agent-xvbhq                              3/3     Running   0          16h
+contrail-analytics-alarm-m7rhg                    4/4     Running   0          16h
+contrail-analytics-mnx2q                          4/4     Running   0          16h
+contrail-analytics-snmp-v5dzj                     4/4     Running   0          16h
+contrail-analyticsdb-z6cfm                        4/4     Running   0          16h
+contrail-configdb-jp9sg                           3/3     Running   0          16h
+contrail-controller-config-7zn25                  6/6     Running   0          16h
+contrail-controller-control-7nf97                 5/5     Running   0          16h
+contrail-controller-webui-7xgp7                   2/2     Running   0          16h
+contrail-kube-manager-qqh52                       1/1     Running   0          16h
+coredns-5644d7b6d9-njzsm                          1/1     Running   0          16h
+coredns-5644d7b6d9-rfn8t                          1/1     Running   0          16h
+etcd-r9-ru26.csa.juniper.net                      1/1     Running   0          16h
+kube-apiserver-r9-ru26.csa.juniper.net            1/1     Running   0          16h
+kube-controller-manager-r9-ru26.csa.juniper.net   1/1     Running   0          16h
+kube-proxy-nkh65                                  1/1     Running   0          16h
+kube-proxy-nvmwd                                  1/1     Running   0          16h
+kube-proxy-xqrsd                                  1/1     Running   0          16h
+kube-scheduler-r9-ru26.csa.juniper.net            1/1     Running   0          16h
+rabbitmq-f4tws                                    1/1     Running   0          16h
+redis-xlzvb                                       1/1     Running   0          16h
 ```
 ```
 $ kubectl create clusterrolebinding permissive-binding \
@@ -109,53 +81,51 @@ Grant the cluster-admin RBAC role
 kubectl auth can-i '*' '*' --all-namespaces
 ```
 
-### Creating a OpenShift 4.4 cluster with Contrail in AWS
+### Creating a EKS cluster in AWS
 
-For installing a OpenShift 4.4 cluster with Contrail in AWS, follow the installation procedure [here](https://github.com/ovaleanujnpr/openshift4.x/blob/master/docs/ocp4-contrail-aws.md)
+I installed an EKS cluster using `eksctl` cli tool. Make sure [aws credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) are configured on your station.
+
+Create a working directory
 
 ```
-$ kubectl get nodes -o wide
-NAME                                         STATUS   ROLES    AGE   VERSION           INTERNAL-IP    EXTERNAL-IP   OS-IMAGE                                                       KERNEL-VERSION                 CONTAINER-RUNTIME
-ip-10-0-130-121.eu-west-1.compute.internal   Ready    master   20h   v1.17.1+6af3663   10.0.130.121   <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
-ip-10-0-136-50.eu-west-1.compute.internal    Ready    worker   20h   v1.17.1+6af3663   10.0.136.50    <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
-ip-10-0-175-127.eu-west-1.compute.internal   Ready    master   20h   v1.17.1+6af3663   10.0.175.127   <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
-ip-10-0-185-25.eu-west-1.compute.internal    Ready    worker   20h   v1.17.1+6af3663   10.0.185.25    <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
-ip-10-0-213-87.eu-west-1.compute.internal    Ready    worker   20h   v1.17.1+6af3663   10.0.213.87    <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
-ip-10-0-220-7.eu-west-1.compute.internal     Ready    master   20h   v1.17.1+6af3663   10.0.220.7     <none>        Red Hat Enterprise Linux CoreOS 44.82.202008250531-0 (Ootpa)   4.18.0-193.14.3.el8_2.x86_64   cri-o://1.17.5-4.rhaos4.4.git7f0085b.el8
+$ mkdir ~/anthos ; cd ~/anthos
+```
 
-$ kubectl get pods -n contrail
-NAME                                          READY   STATUS    RESTARTS   AGE
-cassandra1-cassandra-statefulset-0            1/1     Running   1          20h
-cassandra1-cassandra-statefulset-1            1/1     Running   0          20h
-cassandra1-cassandra-statefulset-2            1/1     Running   0          20h
-config1-config-statefulset-0                  10/10   Running   0          20h
-config1-config-statefulset-1                  10/10   Running   2          20h
-config1-config-statefulset-2                  10/10   Running   2          20h
-contrail-operator-f6bd8c6dc-242td             1/1     Running   1          20h
-contrail-operator-f6bd8c6dc-ds6d8             1/1     Running   2          20h
-contrail-operator-f6bd8c6dc-f8blz             1/1     Running   3          20h
-control1-control-statefulset-0                4/4     Running   4          20h
-control1-control-statefulset-1                4/4     Running   4          20h
-control1-control-statefulset-2                4/4     Running   4          20h
-kubemanager1-kubemanager-statefulset-0        2/2     Running   0          20h
-kubemanager1-kubemanager-statefulset-1        2/2     Running   1          20h
-kubemanager1-kubemanager-statefulset-2        2/2     Running   1          20h
-provmanager1-provisionmanager-statefulset-0   1/1     Running   0          20h
-rabbitmq1-rabbitmq-statefulset-0              1/1     Running   0          20h
-rabbitmq1-rabbitmq-statefulset-1              1/1     Running   0          20h
-rabbitmq1-rabbitmq-statefulset-2              1/1     Running   0          20h
-vroutermasternodes-vrouter-daemonset-jtpkc    1/1     Running   0          20h
-vroutermasternodes-vrouter-daemonset-tbcpg    1/1     Running   0          20h
-vroutermasternodes-vrouter-daemonset-wrrt4    1/1     Running   0          20h
-vrouterworkernodes-vrouter-daemonset-2zmrq    1/1     Running   0          20h
-vrouterworkernodes-vrouter-daemonset-gnvfg    1/1     Running   0          20h
-vrouterworkernodes-vrouter-daemonset-nr859    1/1     Running   0          20h
-webui1-webui-statefulset-0                    3/3     Running   0          20h
-webui1-webui-statefulset-1                    3/3     Running   0          20h
-webui1-webui-statefulset-2                    3/3     Running   0          20h
-zookeeper1-zookeeper-statefulset-0            1/1     Running   0          20h
-zookeeper1-zookeeper-statefulset-1            1/1     Running   1          20h
-zookeeper1-zookeeper-statefulset-2            1/1     Running   0          20h
+```
+$ export KUBECONFIG=eks-config
+$ eksctl create cluster \
+--name eks-cluster-1 \
+--version 1.16 \
+--nodegroup-name eks-workers \
+--node-type t3.medium \
+--node-volume-size=150 \
+--nodes 3 \
+--nodes-min 3 \
+--nodes-max 6 \
+--node-ami auto \
+--node-ami-family Ubuntu1804 \
+--ssh-access \
+--region=eu-west-3 \
+--set-kubeconfig-context=true
+```
+
+```
+$ kubectl get nodes
+NAME                                           STATUS   ROLES    AGE   VERSION
+ip-192-168-59-157.eu-west-3.compute.internal   Ready    <none>   18h   v1.16.9
+ip-192-168-9-2.eu-west-3.compute.internal      Ready    <none>   18h   v1.16.9
+ip-192-168-90-91.eu-west-3.compute.internal    Ready    <none>   18h   v1.16.9
+
+$ kubectl get pods -A
+NAME                       READY   STATUS    RESTARTS   AGE
+aws-node-8rn5b             1/1     Running   0          18h
+aws-node-dnl8x             1/1     Running   0          18h
+aws-node-nwj6n             1/1     Running   0          18h
+coredns-84744d8475-6njk7   1/1     Running   0          18h
+coredns-84744d8475-pt8g6   1/1     Running   0          18h
+kube-proxy-6jsd7           1/1     Running   0          18h
+kube-proxy-9kxgq           1/1     Running   0          18h
+kube-proxy-jb49b           1/1     Running   0          18h
 ```
 Grant the cluster-admin RBAC role
 ```
@@ -175,18 +145,21 @@ Follow the process and create a project. Then check the project creation and pro
 
 ```
 $ gcloud projects list
+PROJECT_ID            NAME              PROJECT_NUMBER
+dotted-ranger-283911  My First Project  482168856288
+trusty-wares-283912   Contrail          234378606342
 ```
 
-Choose the project
+Choose the projects
 
 ```
-$ gcloud config set project contrail-k8s-289615
+$ gcloud config set project trusty-wares-283912
 ```
 
 I need to grant the required IAM roles to the user registering the cluster
 
 ```
-PROJECT_ID=contrail-k8s-289615
+PROJECT_ID=trusty-wares-283912
 $ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
  --member user:[GCP_EMAIL_ADDRESS] \
  --role=roles/gkehub.admin \
@@ -201,18 +174,15 @@ I enable the APIs required for my project
 gcloud services enable \
  --project=${PROJECT_ID} \
  container.googleapis.com \
- compute.googleapis.com \
  gkeconnect.googleapis.com \
  gkehub.googleapis.com \
  cloudresourcemanager.googleapis.com \
- cloudtrace.googleapis.com \
  anthos.googleapis.com \
  iamcredentials.googleapis.com \
  meshca.googleapis.com \
  meshconfig.googleapis.com \
  meshtelemetry.googleapis.com \
  monitoring.googleapis.com \
- logging.googleapis.com \
  runtimeconfig.googleapis.com
 ```
 
@@ -221,13 +191,13 @@ Now, I will create the GKE cluster
 ```
 $ export KUBECONFIG=gke-config
 $ gcloud container clusters create gke-cluster-1 \
---zone "europe-west2-a" \
---disk-type "pd-ssd" \
---disk-size "150GB" \
---machine-type "n2-standard-2" \
+--zone europe-west3-a \
+--disk-type=pd-ssd \
+--disk-size=80GB \
+--machine-type=n1-standard-1 \
 --num-nodes=3 \
---image-type "COS" \
---cluster-version "1.17.9-gke.1504"
+--image-type ubuntu \
+--cluster-version=1.16.11-gke.5
 ```
 
 ```
@@ -240,37 +210,37 @@ Because I will have to change the context often from one cluster to another, I w
 
 Copy the $HOME/.kube/config from on-prem cluster on my mac as `contrail-config` in `~/.kube`.
 
-Copy the ocp4 and gke configs in the same directory
+Copy the eks and gke configs in the same directory
 
 ```
 $ cp *-config ~/.kube
-$ KUBECONFIG=$HOME/.kube/ocp4-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config kubectl config view --merge --flatten > $HOME/.kube/config
+$ KUBECONFIG=$HOME/.kube/eks-config:$HOME/.kube/contrail-config:$HOME/.kube/gke-config kubectl config view --merge --flatten > $HOME/.kube/config
 
-$ kubectx gke_contrail-k8s-289615_europe-west2-a_gke-cluster-1
+$ kubectx gke_trusty-wares-283912_europe-west3-a_gke-cluster-1
 $ kubectx gke=.
 
-$ kubectx w1
-$ kubectx aws-ocp4-contrail=.
+$ kubectx iam-root-account@eks-cluster-1.eu-west-3.eksctl.io
+$ kubectx eks=.
 
 $ kubectx kubernetes-admin@kubernetes
-$ kubectx onprem-k8s-contrail=.
+$ kubectx contrail=.
 ```
 
 Now we have three context representing the clusters
 
 ```
 $ kubectx
-aws-ocp4-contrail
 gke
-onprem-k8s-contrail
+eks
+contrail
 ```
 
 ### Configure the GCP account for Anthos
 
-Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (on-prem and OpenShift4) to connect to Anthos
+Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (on-prem and EKS) to connect to Anthos
 
 ```
-$ PROJECT_ID=contrail-k8s-289615
+$ PROJECT_ID=trusty-wares-283912
 $ SERVICE_ACCOUNT_NAME=anthos-connect
 
 $ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT_ID}
@@ -290,6 +260,7 @@ $ gcloud iam service-accounts keys create ./${SERVICE_ACCOUNT_NAME}-svc.json \
   --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
   --project=${PROJECT_ID}
 ```
+## Multi-cluster Management
 
 ### Register an External Kubernetes Cluster to GKE Connect
 
@@ -305,50 +276,82 @@ For on-prem Contrail cluster:
 ```
 gcloud container hub memberships register contrail-cluster-1 \
    --project=${PROJECT_ID} \
-   --context=onprem-k8s-contrail \
+   --context=contrail \
    --kubeconfig=$HOME/.kube/config \
    --service-account-key-file=./anthos-connect-svc.json
 ```
 
+
 When the command finishes a new pod called gke-connect-agent will run in the cluster. This is responsabile to communication with GKE Hub as I decribed above.
 ```
-$ kubectx onprem-k8s-contrail
-Switched to context "onprem-k8s-contrail".
+$ kubectx contrail
+Switched to context "contrail".
 
-$ kubectl get pods -n gke-connect
-NAMESPACE      NAME                                               READY   STATUS      RESTARTS   AGE
-gke-connect    gke-connect-agent-20200918-01-00-7bc77884d-st4r2   1/1     Running     0          45m
+$ kubectl get pods -A
+NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
+gke-connect   gke-connect-agent-20200717-00-00-58c749c9d7-l9v66   1/1     Running   0          23m
+kube-system   config-zookeeper-6kqsf                              1/1     Running   0          16h
+kube-system   contrail-agent-qpxqd                                3/3     Running   0          16h
+kube-system   contrail-agent-vrcsl                                3/3     Running   0          16h
+kube-system   contrail-agent-xvbhq                                3/3     Running   0          16h
+kube-system   contrail-analytics-alarm-m7rhg                      4/4     Running   0          16h
+kube-system   contrail-analytics-mnx2q                            4/4     Running   0          16h
+kube-system   contrail-analytics-snmp-v5dzj                       4/4     Running   0          16h
+kube-system   contrail-analyticsdb-z6cfm                          4/4     Running   0          16h
+kube-system   contrail-configdb-jp9sg                             3/3     Running   0          16h
+kube-system   contrail-controller-config-7zn25                    6/6     Running   0          16h
+kube-system   contrail-controller-control-7nf97                   5/5     Running   0          16h
+kube-system   contrail-controller-webui-7xgp7                     2/2     Running   0          16h
+kube-system   contrail-kube-manager-qqh52                         1/1     Running   0          16h
+kube-system   coredns-5644d7b6d9-njzsm                            1/1     Running   0          16h
+kube-system   coredns-5644d7b6d9-rfn8t                            1/1     Running   0          16h
+kube-system   etcd-r9-ru26.csa.juniper.net                        1/1     Running   0          16h
+kube-system   kube-apiserver-r9-ru26.csa.juniper.net              1/1     Running   0          16h
+kube-system   kube-controller-manager-r9-ru26.csa.juniper.net     1/1     Running   0          16h
+kube-system   kube-proxy-nkh65                                    1/1     Running   0          16h
+kube-system   kube-proxy-nvmwd                                    1/1     Running   0          16h
+kube-system   kube-proxy-xqrsd                                    1/1     Running   0          16h
+kube-system   kube-scheduler-r9-ru26.csa.juniper.net              1/1     Running   0          16h
+kube-system   rabbitmq-f4tws                                      1/1     Running   0          16h
+kube-system   redis-xlzvb                                         1/1     Running   0          16h
 ```
 
 _Note: I need SNAT enabled in Contrail to allow gke-connect-agent communication to internet_
 
-The same for the OpenShift 4 cluster
+The same for the EKS cluster
 
 ```
-gcloud container hub memberships register awsocp4-contrail-cluster-1 \
+gcloud container hub memberships register eks-cluster-1 \
    --project=${PROJECT_ID} \
-   --context= aws-ocp4-contrail \
+   --context=eks \
    --kubeconfig=$HOME/.kube/config \
    --service-account-key-file=./anthos-connect-svc.json
 ```
 The same `gke-connect-agent` will be installed like on on-prem cluster
 
 ```
-$ kubectx aws-ocp4-contrail
-Switched to context "aws-ocp4-contrail".
+$ kubectx eks
+Switched to context "eks".
 
-$ kubectl get pods -n gke-connect
+$ kubectl get pods -A
 NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE
 gke-connect   gke-connect-agent-20200724-01-00-57895588b7-c6flv   1/1     Running   0          125m
+kube-system   aws-node-8rn5b                                      1/1     Running   0          19h
+kube-system   aws-node-dnl8x                                      1/1     Running   0          19h
+kube-system   aws-node-nwj6n                                      1/1     Running   0          19h
+kube-system   coredns-84744d8475-6njk7                            1/1     Running   0          19h
+kube-system   coredns-84744d8475-pt8g6                            1/1     Running   0          19h
+kube-system   kube-proxy-6jsd7                                    1/1     Running   0          19h
+kube-system   kube-proxy-9kxgq                                    1/1     Running   0          19h
+kube-system   kube-proxy-jb49b                                    1/1     Running   0          19h
 ```
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image22.png)
 
 And the GKE cluster
 
 ```
 gcloud container hub memberships register gke-cluster-1 \
 --project=${PROJECT_ID} \
---gke-cluster=europe-west2-a/gke-cluster-1 \
+--gke-cluster=europe-west3-a/gke-cluster-1 \
 --service-account-key-file=./anthos-connect-svc.json
 ```
 
@@ -357,9 +360,10 @@ I can view cluster registration status and all the clusters within my Google pro
 ```
 $ gcloud container hub memberships list
 NAME                EXTERNAL_ID
-onpremk8s-contrail-cluster-1  78f7890b-3a43-4bc7-8fd9-44c76953781b
-gke-cluster-1                 0f4260ac-9542-4344-a031-5a292c2b980b
-awsocp4-contrail-cluster-1    9618e11c-ac4a-4def-b1c5-25a7891dffff
+NAME                EXTERNAL_ID
+contrail-cluster-1  da221221-0f05-491c-8fe2-2eb4452a593d
+gke-cluster-1       193af6eb-790b-444b-9eb0-62f03ace7c76
+eks-cluster-1       6418ecdc-cf0e-448b-ade7-1d32a892309c
 ```
 
 To login to the external clusters from the Google Anthos Console I will use a bearer token. For this I will create a Kubernetes service account (KSA) in the cluster.
@@ -402,32 +406,29 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --deco
 
 The output token use it in Cloud Console to Login to the cluster
 
-I will do the same for OpenShift 4 cluster
+I will do the same for EKS cluster
 
 ```
-$ kubectx aws-ocp4-contrail
+$ kubectx eks
 $ $ kubectl apply -f node-reader.yaml
 
 $ kubectl create serviceaccount ${KSA_NAME}
 $ kubectl create clusterrolebinding anthos-view --clusterrole view --serviceaccount default:${KSA_NAME}
 $ kubectl create clusterrolebinding anthos-node-reader --clusterrole node-reader --serviceaccount default:${KSA_NAME}
 $ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}
-
-$ SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath='{$.secrets[0].name}')
-$ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
 ```
+
 
 The clusters should be visibile in Anthos
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image13.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image4.png)
 
 I can view details about it in Kubernetes Engine tab
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image14.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image5.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image15.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image6.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image16.png)
 ### Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster
 
 The first time you deploy an application to a Anthos GKE on-prem cluster, you must also create a namespace called `application-system` for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.
@@ -443,7 +444,7 @@ Active namespace is "application-system".
 To pull the images from GCR, we need to create a service account and download the associated JSON token
 
 ```
-$ PROJECT_ID=contrail-k8s-289615
+$ PROJECT_ID=trusty-wares-283912
 
 $ gcloud iam service-accounts create gcr-sa \
 	--project=${PROJECT_ID}
@@ -540,19 +541,19 @@ All these steps were a preparation to deploy an app from GCP Marketplace to the 
 
 Choose PostgresSQL Server from GCP Marketplace and then click on Configure de start the deployment procedure
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image17.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image8.png)
 
-Choose the external cluster, `onpremk8s-contrail-cluster-1`
+Choose the external cluster, `contrail-cluster-1`
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image18.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image9.png)
 
 Select the namespace created, storage class and click Deploy
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image19.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image10.png)
 
 After a minute PostgresSQl is deployed
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image20.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image11.png)
 
 ```
 $ kubectl get po -n pgsql
@@ -567,7 +568,7 @@ postgresql-1-postgresql-pvc-postgresql-1-postgresql-0   Bound    local-pv-e00b14
 
 In GKE Console we can filter to see the applications deployed on on-prem cluster
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image21.png)
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image12.png)
 
 Access PostgreSQL
 

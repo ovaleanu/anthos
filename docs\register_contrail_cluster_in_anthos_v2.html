@@ -31,7 +31,7 @@ Reference <a href="https://cloud.google.com/anthos/docs/concepts/overview">https
 So, in my case I will have one GKE on Google Cloud and two attached clusters, Kubernetes with Contrail running on-prem and OpenShift 4 with Contrail running in AWS.
 Acording with the diagram for an attached cluster, Anthos has the following components:</p>
 <ol>
-<li>Multicluster Management: Environ, Connect</li>
+<li>Multi-cluster Management: Connect, Environ</li>
 <li>Configuration Management: Anthos Config Management, Policy Controller</li>
 <li>Service Management: Anthos Service Mesh</li>
 </ol>
@@ -225,12 +225,13 @@ $ gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --project=${PROJECT
  --role=&quot;roles/gkehub.connect&quot;</code></pre><p>Create the service account&apos;s private key JSON file in current directory. I will need this file for registering the clusters:</p>
 <pre><code>$ gcloud iam service-accounts keys create ./${SERVICE_ACCOUNT_NAME}-svc.json \
   --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
-  --project=${PROJECT_ID}</code></pre><h3 id="register-an-external-kubernetes-cluster-to-gke-connect">Register an External Kubernetes Cluster to GKE Connect</h3>
+  --project=${PROJECT_ID}</code></pre><h2 id="multi-cluster-management">Multi-cluster Management</h2>
+<h3 id="register-an-external-kubernetes-cluster-to-gke-connect">Register an External Kubernetes Cluster to GKE Connect</h3>
 <p>Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details <a href="https://cloud.google.com/anthos/multicluster-management/connect/overview">here</a>.</p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png" alt></p>
 <p>To register a non-GKE clusters we need to run the following command</p>
 <p>For on-prem Contrail cluster:</p>
-<pre><code>gcloud container hub memberships register onpremk8s-contrail-cluster-1 \
+<pre><code>gcloud container hub memberships register contrail-cluster-1 \
    --project=${PROJECT_ID} \
    --context=onprem-k8s-contrail \
    --kubeconfig=$HOME/.kube/config \
@@ -386,7 +387,14 @@ $ psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.6.18)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type &quot;help&quot; for help.
 
-postgres=#</code></pre></article></div><div style="background-color: #b4b2b2;width: 50px;height:50px;line-height: 50px;text-align: center;position: fixed;bottom: 10px;right: 10px;padding-top:5px;" onclick="document.documentElement.scrollTop = document.body.scrollTop =0;">
+postgres=#</code></pre><h2 id="configuration-management">Configuration Management</h2>
+<h3 id="anthos-config-management">Anthos Config Management</h3>
+<p>In this part will I use GitOps-style deployment to push workloads across all registered clusters through Anthos Config Management.
+GitOps is a way to do Kubernetes cluster management and application delivery.  It works by using Git as a single source of truth for declarative infrastructure and applications. Since Kubernetes uses YAML or JSON files for specifications, it becomes easy to combine these artifacts with code.
+Google built a tool called <a href="https://cloud.google.com/kubernetes-engine/docs/add-on/config-sync/overview">Config Sync</a> which acts as the bridge between an external source code repository and the Kubernetes API server. Anthos Config Management is based on Config Sync to extend it to multicluster scenarios.
+I will use a GitHub repository that acts as a single source of truth for deployments and configuration. A component of ACM is installed into each of the registered Anthos clusters to monitor the external repository for any changes and synchronizing them with the cluster.</p>
+<h3 id="installing-the-configuration-management-operator">Installing the Configuration Management Operator</h3>
+</article></div><div style="background-color: #b4b2b2;width: 50px;height:50px;line-height: 50px;text-align: center;position: fixed;bottom: 10px;right: 10px;padding-top:5px;" onclick="document.documentElement.scrollTop = document.body.scrollTop =0;">
   <svg t="1533629773982" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1035" xlink="http://www.w3.org/1999/xlink" width="40" height="40"><defs><style type="text/css">@font-face { font-family: uc-nexus-iconfont; src: url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.woff") format("woff"), url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.ttf") format("truetype"); }
   </style></defs><path d="M536.255427 195.182354c-7.804756-7.804756-17.966187-11.615549-28.311813-11.615549-9.43693 0-18.874883 3.449565-26.496467 10.163477-2.360767 1.452071-4.356214 3.267417-6.352685 5.262864L218.47792 455.611735c-15.607466 15.60542-15.607466 40.834011 0 56.43943 15.607466 15.607466 41.558511 15.607466 57.167001 0l193.46013-192.733583 0 600.526219c0 22.1423 17.787108 39.927361 39.927361 39.927361 22.140253 0 39.927361-17.785062 39.927361-39.927361L548.959773 319.317583 737.15704 508.422522c15.607466 15.607466 40.469714 15.607466 56.078203 0 15.607466-15.607466 15.425318-40.834011-0.182149-56.441477L536.255427 195.182354 536.255427 195.182354z" p-id="1036" fill="#333"/><path d="M101.784174 143.097092l816.674071 0c22.140253 0 39.925315-17.785062 39.925315-39.927361 0-22.140253-17.784038-39.925315-39.925315-39.925315L101.784174 63.244416c-22.140253 0-39.927361 17.785062-39.927361 39.925315C61.856813 125.31203 79.643921 143.097092 101.784174 143.097092L101.784174 143.097092z" p-id="1037" fill="#333"/></svg>
 </div>
