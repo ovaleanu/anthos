@@ -787,3 +787,128 @@ Google built a tool called [Config Sync](https://cloud.google.com/kubernetes-eng
 I will use a GitHub repository that acts as a single source of truth for deployments and configuration. A component of ACM is installed into each of the registered Anthos clusters to monitor the external repository for any changes and synchronizing them with the cluster.
 
 ### Installing the Configuration Management Operator
+
+The Configuration Management Operator like any other operator is a controller that manages installation of the Anthos Config Management.
+
+I will install this operator on all three clusters, GKE, Contrail K8s on-premis and Contrail EKS.
+
+Download the operator and apply it to each cluster
+
+```
+gsutil cp gs://config-management-release/released/latest/config-management-operator.yaml config-management-operator.yaml
+```
+
+```
+$ kubectl create -f config-management-operator.yaml
+customresourcedefinition.apiextensions.k8s.io/configmanagements.configmanagement.gke.io configured
+clusterrolebinding.rbac.authorization.k8s.io/config-management-operator configured
+clusterrole.rbac.authorization.k8s.io/config-management-operator configured
+serviceaccount/config-management-operator configured
+deployment.apps/config-management-operator configured
+namespace/config-management-system configured
+```
+
+Run this command on all the clusters
+
+Check if the operator was CREATED
+
+```
+$ kubectl describe crds configmanagements.configmanagement.gke.io
+Name:         configmanagements.configmanagement.gke.io
+Namespace:
+Labels:       controller-tools.k8s.io=1.0
+Annotations:  <none>
+API Version:  apiextensions.k8s.io/v1
+Kind:         CustomResourceDefinition
+Metadata:
+  Creation Timestamp:  2020-10-09T13:13:17Z
+  Generation:          1
+  Resource Version:    363244
+  Self Link:           /apis/apiextensions.k8s.io/v1/customresourcedefinitions/configmanagements.configmanagement.gke.io
+  UID:                 a088edbc-8232-419f-8f42-365fa36de110
+Spec:
+  Conversion:
+    Strategy:  None
+  Group:       configmanagement.gke.io
+  Names:
+    Kind:                   ConfigManagement
+    List Kind:              ConfigManagementList
+    Plural:                 configmanagements
+    Singular:               configmanagement
+....
+```
+
+### Configuring the clusters for ACM
+
+Create an SSH keypair to allow the Operator to authenticate to your Git repository
+
+```
+$ ssh-keygen -t rsa -b 4096 -C "ovaleanujnpr" -N '' -f "~/.ssh/gke-github"
+```
+
+In my case is `ovaleanujnpr` my git repository name.
+
+Configure your repo to recognize the newly-created public key. Details [here](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) for Github.
+Add the private key to a new Secret in the cluster. Do this step separately on every cluster.
+
+```
+$ kubectl create secret generic git-creds \
+  --namespace=config-management-system \
+  --from-file=ssh="/Users/ovaleanu/.ssh/gke-github"
+```
+
+I will use a sample repo from Google Cloud documentation, https://github.com/GoogleCloudPlatform/csp-config-management/. Fork this repo into your Github repo.
+
+You will need the name for each register cluster. To find it run this command:
+
+```
+$ gcloud container hub memberships list
+NAME                          EXTERNAL_ID
+onpremk8s-contrail-cluster-1  78f7890b-3a43-4bc7-8fd9-44c76953781b
+eks-contrail-cluster-1        42e532ba-a0d9-4087-baed-647be8bca7e9
+gke-cluster-1                 6671599e-87af-461b-aff9-7105ebda5c66
+```
+
+Create the below YAML file for each cluster by replacing the clusterName with the registered clustered name in Anthos.
+
+```
+$ cat config-management.yaml
+apiVersion: configmanagement.gke.io/v1
+kind: ConfigManagement
+metadata:
+  name: config-management
+spec:
+  # clusterName is required and must be unique among all managed clusters
+  clusterName:
+  git:
+    syncRepo: git@github.com:ovaleanujnpr/csp-config-management.git
+    syncBranch: 1.0.0
+    secretType: ssh
+    policyDir: foo-corp
+    proxy: {}
+```
+
+```
+$ kubectx eks-contrail
+$ kubectl apply -f config-management.yaml
+
+$ kubectx onprem-k8s-contrail
+$ kubectl apply -f config-management.yaml
+
+$ kubectx gke
+$ kubectl apply -f config-management.yaml
+```
+
+You should see the pods Running on every cluster
+
+```
+$ kubectl get pods -n config-management-system
+NAME                            READY   STATUS    RESTARTS   AGE
+git-importer-584bd49676-46bjq   3/3     Running   0          4m23s
+monitor-c8c68d5ff-bdhzl         1/1     Running   0          4m25s
+syncer-7dbbc8868c-gtp8d         1/1     Running   0          4m25s
+```
+
+and all the clusters sync on Anthos Dashboard
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image32.png)

@@ -511,6 +511,80 @@ GitOps is a way to do Kubernetes cluster management and application delivery.  I
 Google built a tool called <a href="https://cloud.google.com/kubernetes-engine/docs/add-on/config-sync/overview">Config Sync</a> which acts as the bridge between an external source code repository and the Kubernetes API server. Anthos Config Management is based on Config Sync to extend it to multicluster scenarios.
 I will use a GitHub repository that acts as a single source of truth for deployments and configuration. A component of ACM is installed into each of the registered Anthos clusters to monitor the external repository for any changes and synchronizing them with the cluster.</p>
 <h3 id="installing-the-configuration-management-operator">Installing the Configuration Management Operator</h3>
+<p>The Configuration Management Operator like any other operator is a controller that manages installation of the Anthos Config Management.</p>
+<p>I will install this operator on all three clusters, GKE, Contrail K8s on-premis and Contrail EKS.</p>
+<p>Download the operator and apply it to each cluster</p>
+<pre><code>gsutil cp gs://config-management-release/released/latest/config-management-operator.yaml config-management-operator.yaml</code></pre><pre><code>$ kubectl create -f config-management-operator.yaml
+customresourcedefinition.apiextensions.k8s.io/configmanagements.configmanagement.gke.io configured
+clusterrolebinding.rbac.authorization.k8s.io/config-management-operator configured
+clusterrole.rbac.authorization.k8s.io/config-management-operator configured
+serviceaccount/config-management-operator configured
+deployment.apps/config-management-operator configured
+namespace/config-management-system configured</code></pre><p>Run this command on all the clusters</p>
+<p>Check if the operator was CREATED</p>
+<pre><code>$ kubectl describe crds configmanagements.configmanagement.gke.io
+Name:         configmanagements.configmanagement.gke.io
+Namespace:
+Labels:       controller-tools.k8s.io=1.0
+Annotations:  &lt;none&gt;
+API Version:  apiextensions.k8s.io/v1
+Kind:         CustomResourceDefinition
+Metadata:
+  Creation Timestamp:  2020-10-09T13:13:17Z
+  Generation:          1
+  Resource Version:    363244
+  Self Link:           /apis/apiextensions.k8s.io/v1/customresourcedefinitions/configmanagements.configmanagement.gke.io
+  UID:                 a088edbc-8232-419f-8f42-365fa36de110
+Spec:
+  Conversion:
+    Strategy:  None
+  Group:       configmanagement.gke.io
+  Names:
+    Kind:                   ConfigManagement
+    List Kind:              ConfigManagementList
+    Plural:                 configmanagements
+    Singular:               configmanagement
+....</code></pre><h3 id="configuring-the-clusters-for-acm">Configuring the clusters for ACM</h3>
+<p>Create an SSH keypair to allow the Operator to authenticate to your Git repository</p>
+<pre><code>$ ssh-keygen -t rsa -b 4096 -C &quot;ovaleanujnpr&quot; -N &apos;&apos; -f &quot;~/.ssh/gke-github&quot;</code></pre><p>In my case is <code>ovaleanujnpr</code> my git repository name.</p>
+<p>Configure your repo to recognize the newly-created public key. Details <a href="https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account">here</a> for Github.
+Add the private key to a new Secret in the cluster. Do this step separately on every cluster.</p>
+<pre><code>$ kubectl create secret generic git-creds \
+  --namespace=config-management-system \
+  --from-file=ssh=&quot;/Users/ovaleanu/.ssh/gke-github&quot;</code></pre><p>I will use a sample repo from Google Cloud documentation, <a href="https://github.com/GoogleCloudPlatform/csp-config-management/">https://github.com/GoogleCloudPlatform/csp-config-management/</a>. Fork this repo into your Github repo.</p>
+<p>You will need the name for each register cluster. To find it run this command:</p>
+<pre><code>$ gcloud container hub memberships list
+NAME                          EXTERNAL_ID
+onpremk8s-contrail-cluster-1  78f7890b-3a43-4bc7-8fd9-44c76953781b
+eks-contrail-cluster-1        42e532ba-a0d9-4087-baed-647be8bca7e9
+gke-cluster-1                 6671599e-87af-461b-aff9-7105ebda5c66</code></pre><p>Create the below YAML file for each cluster by replacing the clusterName with the registered clustered name in Anthos.</p>
+<pre><code>$ cat config-management.yaml
+apiVersion: configmanagement.gke.io/v1
+kind: ConfigManagement
+metadata:
+  name: config-management
+spec:
+  # clusterName is required and must be unique among all managed clusters
+  clusterName:
+  git:
+    syncRepo: git@github.com:ovaleanujnpr/csp-config-management.git
+    syncBranch: 1.0.0
+    secretType: ssh
+    policyDir: foo-corp
+    proxy: {}</code></pre><pre><code>$ kubectx eks-contrail
+$ kubectl apply -f config-management.yaml
+
+$ kubectx onprem-k8s-contrail
+$ kubectl apply -f config-management.yaml
+
+$ kubectx gke
+$ kubectl apply -f config-management.yaml</code></pre><p>You should see the pods Running on every cluster</p>
+<pre><code>$ kubectl get pods -n config-management-system
+NAME                            READY   STATUS    RESTARTS   AGE
+git-importer-584bd49676-46bjq   3/3     Running   0          4m23s
+monitor-c8c68d5ff-bdhzl         1/1     Running   0          4m25s
+syncer-7dbbc8868c-gtp8d         1/1     Running   0          4m25s</code></pre><p>and all the clusters sync on Anthos Dashboard</p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image32.png" alt></p>
 </article></div><div style="background-color: #b4b2b2;width: 50px;height:50px;line-height: 50px;text-align: center;position: fixed;bottom: 10px;right: 10px;padding-top:5px;" onclick="document.documentElement.scrollTop = document.body.scrollTop =0;">
   <svg t="1533629773982" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1035" xlink="http://www.w3.org/1999/xlink" width="40" height="40"><defs><style type="text/css">@font-face { font-family: uc-nexus-iconfont; src: url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.woff") format("woff"), url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.ttf") format("truetype"); }
   </style></defs><path d="M536.255427 195.182354c-7.804756-7.804756-17.966187-11.615549-28.311813-11.615549-9.43693 0-18.874883 3.449565-26.496467 10.163477-2.360767 1.452071-4.356214 3.267417-6.352685 5.262864L218.47792 455.611735c-15.607466 15.60542-15.607466 40.834011 0 56.43943 15.607466 15.607466 41.558511 15.607466 57.167001 0l193.46013-192.733583 0 600.526219c0 22.1423 17.787108 39.927361 39.927361 39.927361 22.140253 0 39.927361-17.785062 39.927361-39.927361L548.959773 319.317583 737.15704 508.422522c15.607466 15.607466 40.469714 15.607466 56.078203 0 15.607466-15.607466 15.425318-40.834011-0.182149-56.441477L536.255427 195.182354 536.255427 195.182354z" p-id="1036" fill="#333"/><path d="M101.784174 143.097092l816.674071 0c22.140253 0 39.925315-17.785062 39.925315-39.927361 0-22.140253-17.784038-39.925315-39.925315-39.925315L101.784174 63.244416c-22.140253 0-39.927361 17.785062-39.927361 39.925315C61.856813 125.31203 79.643921 143.097092 101.784174 143.097092L101.784174 143.097092z" p-id="1037" fill="#333"/></svg>
