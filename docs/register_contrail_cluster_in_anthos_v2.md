@@ -737,7 +737,7 @@ After several minutes Prometheus & Grafana are deployed
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image31.png)
 
 ```
-kubectl get pods -n monitoring
+$ kubectl get pods -n monitoring
 NAME                                               READY   STATUS      RESTARTS   AGE
 prometheus-1-alertmanager-0                        1/1     Running     0          2m36s
 prometheus-1-alertmanager-1                        1/1     Running     0          88s
