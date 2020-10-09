@@ -5,6 +5,7 @@ The following diagram shows Anthos components and features and how they provide 
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
 Reference https://cloud.google.com/anthos/docs/concepts/overview
+
 The scope of this document is integrate an on-prem K8s runing with Contrail toghther with a GKE and EKS cluster in GCP Anthos.
 
 Acording with the diagram for an attached cluster, Anthos has the following components:
