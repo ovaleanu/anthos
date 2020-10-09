@@ -387,7 +387,7 @@ $ kubectl create secret docker-registry gcr-json-key \
 <pre><code>$ kubectl annotate namespace pgsql marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>All these steps were a preparation to deploy an app from GCP Marketplace to the on-prem K8s cluster with Contrail</p>
 <p>Choose PostgresSQL Server from GCP Marketplace and then click on Configure de start the deployment procedure</p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image17.png" alt></p>
-<p>Choose the external cluster, <code>onpremk8s-contrail-cluster-1</code></p>
+<p>Choose the external cluster <code>onpremk8s-contrail-cluster-1</code></p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image27.png" alt></p>
 <p>Select the namespace created, storage class and click Deploy</p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image19.png" alt></p>
@@ -415,8 +415,84 @@ $ psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.6.18)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type &quot;help&quot; for help.
 
-postgres=#</code></pre><p>Let&apos;s deploy an application from Google Marketplace also on the EKS with Contrail cluster</p>
-<h2 id="configuration-management">Configuration Management</h2>
+postgres=#</code></pre><p>Let&apos;s deploy an application from Google Marketplace also on the EKS with Contrail cluster.
+You will repeat some steps from above.</p>
+<pre><code>$ kubectx eks-contrail
+Switched to context &quot;eks-contrail&quot;
+
+$ kubectl create ns application-system
+
+$ kubens application-system
+Context &quot;kubernetes-admin@kubernetes&quot; modified.
+Active namespace is &quot;application-system&quot;.
+
+$ kubectl create secret docker-registry gcr-json-key \
+--docker-server=https://marketplace.gcr.io \
+--docker-username=_json_key \
+--docker-password=&quot;$(cat ./gcr-sa.json)&quot; \
+--docker-email=[GCP_EMAIL_ADDRESS]
+
+$ kubectl patch serviceaccount default -p &apos;{&quot;imagePullSecrets&quot;: [{&quot;name&quot;: &quot;gcr-json-key&quot;}]}&apos;
+
+$ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>As I mentioned above GCP Marketplace extects a storage class named <code>standard</code>. Thde default storage class name in EKS is <code>gp2</code>.</p>
+<p>First remove the default flag from the gp2 storage class by patching it.</p>
+<pre><code>$  kubectl patch storageclass gp2 -p &apos;{&quot;metadata&quot;: {&quot;annotations&quot;:{&quot;storageclass.kubernetes.io/is-default-class&quot;:&quot;false&quot;}}}&apos;
+storageclass.storage.k8s.io/gp2 patched</code></pre><p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
+<pre><code>$ cat &lt;&lt;EOF &gt; eks-sc.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: &quot;true&quot;
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4
+EOF
+
+$ kubectl create -f eks-sc.yaml
+storageclass.storage.k8s.io/standard created
+
+$ kubectl get sc
+NAME                 PROVISIONER             AGE
+gp2                  kubernetes.io/aws-ebs   2d
+standard (default)   kubernetes.io/aws-ebs   5s</code></pre><p>You can choose to deploy any application Anthos compatible from GCP Marketplace. I choose to deploy Prometheus &amp; Grafana.</p>
+<p>You will create a namespace for the applications</p>
+<pre><code>$ kubectl create ns monitoring
+
+$ kubens monitoring
+
+kubectl create secret docker-registry gcr-json-key \
+ --docker-server=https://gcr.io \
+--docker-username=_json_key \
+--docker-password=&quot;$(cat ./gcr-sa.json)&quot; \
+--docker-email=[GCP_EMAIL_ADDRESS]
+
+$ kubectl patch serviceaccount default -p &apos;{&quot;imagePullSecrets&quot;: [{&quot;name&quot;: &quot;gcr-json-key&quot;}]}&apos;
+
+$ kubectl annotate namespace monitoring marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>Choose Prometheus &amp; Grafana from GCP Marketplace and then click on Configure de start the deployment procedure</p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image28.png" alt></p>
+<p>Choose the external cluster <code>eks-contrail-cluster-1</code></p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image29.png" alt></p>
+<p>Select the namespace created, storage class and click Deploy</p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image30.png" alt></p>
+<p>After several minutes Prometheus &amp; Grafana are deployed</p>
+<p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image31.png" alt></p>
+<pre><code>kubectl get pods -n monitoring
+NAME                                               READY   STATUS      RESTARTS   AGE
+prometheus-1-alertmanager-0                        1/1     Running     0          2m36s
+prometheus-1-alertmanager-1                        1/1     Running     0          88s
+prometheus-1-deployer-blm5f                        0/1     Completed   0          3m20s
+prometheus-1-grafana-0                             1/1     Running     0          2m36s
+prometheus-1-kube-state-metrics-6f64b67684-shtdg   2/2     Running     0          2m37s
+prometheus-1-node-exporter-5scf4                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-gdp77                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-k8vfn                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-v6w7g                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-zffs9                   1/1     Running     0          2m36s
+prometheus-1-prometheus-0                          1/1     Running     0          2m36s
+prometheus-1-prometheus-1                          1/1     Running     0          2m36s</code></pre><h2 id="configuration-management">Configuration Management</h2>
 <h3 id="anthos-config-management">Anthos Config Management</h3>
 <p>In this part will I use GitOps-style deployment to push workloads across all registered clusters through Anthos Config Management.
 GitOps is a way to do Kubernetes cluster management and application delivery.  It works by using Git as a single source of truth for declarative infrastructure and applications. Since Kubernetes uses YAML or JSON files for specifications, it becomes easy to combine these artifacts with code.

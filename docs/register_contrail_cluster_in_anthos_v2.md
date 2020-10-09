@@ -591,7 +591,7 @@ Choose PostgresSQL Server from GCP Marketplace and then click on Configure de st
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image17.png)
 
-Choose the external cluster, `onpremk8s-contrail-cluster-1`
+Choose the external cluster `onpremk8s-contrail-cluster-1`
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image27.png)
 
@@ -642,7 +642,116 @@ Type "help" for help.
 postgres=#
 ```
 
-Let's deploy an application from Google Marketplace also on the EKS with Contrail cluster
+Let's deploy an application from Google Marketplace also on the EKS with Contrail cluster.
+You will repeat some steps from above.
+
+```
+$ kubectx eks-contrail
+Switched to context "eks-contrail"
+
+$ kubectl create ns application-system
+
+$ kubens application-system
+Context "kubernetes-admin@kubernetes" modified.
+Active namespace is "application-system".
+
+$ kubectl create secret docker-registry gcr-json-key \
+--docker-server=https://marketplace.gcr.io \
+--docker-username=_json_key \
+--docker-password="$(cat ./gcr-sa.json)" \
+--docker-email=[GCP_EMAIL_ADDRESS]
+
+$ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+
+$ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key
+```
+
+As I mentioned above GCP Marketplace extects a storage class named `standard`. Thde default storage class name in EKS is `gp2`.
+
+First remove the default flag from the gp2 storage class by patching it.
+
+```
+$  kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+storageclass.storage.k8s.io/gp2 patched
+```
+
+Now you will create a new storage class based Amazon EBS and mark it as the default one.
+
+```
+$ cat <<EOF > eks-sc.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4
+EOF
+
+$ kubectl create -f eks-sc.yaml
+storageclass.storage.k8s.io/standard created
+
+$ kubectl get sc
+NAME                 PROVISIONER             AGE
+gp2                  kubernetes.io/aws-ebs   2d
+standard (default)   kubernetes.io/aws-ebs   5s
+```
+
+You can choose to deploy any application Anthos compatible from GCP Marketplace. I choose to deploy Prometheus & Grafana.
+
+You will create a namespace for the applications
+
+```
+$ kubectl create ns monitoring
+
+$ kubens monitoring
+
+kubectl create secret docker-registry gcr-json-key \
+ --docker-server=https://gcr.io \
+--docker-username=_json_key \
+--docker-password="$(cat ./gcr-sa.json)" \
+--docker-email=[GCP_EMAIL_ADDRESS]
+
+$ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+
+$ kubectl annotate namespace monitoring marketplace.cloud.google.com/imagePullSecret=gcr-json-key
+```
+
+Choose Prometheus & Grafana from GCP Marketplace and then click on Configure de start the deployment procedure
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image28.png)
+
+Choose the external cluster `eks-contrail-cluster-1`
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image29.png)
+
+Select the namespace created, storage class and click Deploy
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image30.png)
+
+After several minutes Prometheus & Grafana are deployed
+
+![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image31.png)
+
+```
+kubectl get pods -n monitoring
+NAME                                               READY   STATUS      RESTARTS   AGE
+prometheus-1-alertmanager-0                        1/1     Running     0          2m36s
+prometheus-1-alertmanager-1                        1/1     Running     0          88s
+prometheus-1-deployer-blm5f                        0/1     Completed   0          3m20s
+prometheus-1-grafana-0                             1/1     Running     0          2m36s
+prometheus-1-kube-state-metrics-6f64b67684-shtdg   2/2     Running     0          2m37s
+prometheus-1-node-exporter-5scf4                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-gdp77                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-k8vfn                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-v6w7g                   1/1     Running     0          2m36s
+prometheus-1-node-exporter-zffs9                   1/1     Running     0          2m36s
+prometheus-1-prometheus-0                          1/1     Running     0          2m36s
+prometheus-1-prometheus-1                          1/1     Running     0          2m36s
+```
 
 
 
