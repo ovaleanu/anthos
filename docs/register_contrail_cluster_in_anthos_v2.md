@@ -909,6 +909,23 @@ monitor-c8c68d5ff-bdhzl         1/1     Running   0          4m25s
 syncer-7dbbc8868c-gtp8d         1/1     Running   0          4m25s
 ```
 
-and all the clusters sync on Anthos Dashboard
+and all the clusters synced on Anthos Dashboard
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image32.png)
+
+Google offers also an utility called **nomos** which can be used to manage the ACM.
+
+```
+$ gsutil cp gs://config-management-release/released/latest/darwin_amd64/nomos nomos
+
+$ cp ./nomos /usr/local/bin
+$ chmod +x /usr/local/bin/nomos
+
+$ nomos status
+Connecting to clusters...
+Current   Context               Sync Status      Last Synced Token   Sync Branch   Resource Status
+-------   -------               -----------      -----------------   -----------   ---------------
+*         eks-contrail          SYNCED           7da177ce            1.0.0         Healthy
+          gke                   SYNCED           7da177ce            1.0.0         Healthy
+          onprem-k8s-contrail   SYNCED           7da177ce            1.0.0         Healthy
+```
