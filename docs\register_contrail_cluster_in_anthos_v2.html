@@ -22,7 +22,7 @@
 </style>
 </head>
 <body><div id="readme" class="container"><article class="markdown-body entry-content"><h1 id="integrate-a-kubernetes-and-eks-cluster-with-contrail-in-google-anthos">Integrate a Kubernetes and EKS cluster with Contrail in Google Anthos</h1>
-<p>Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
+<p>Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premise (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos&apos;s functionality across your environments, from infrastructure management to facilitating application development.</p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png" alt>
 Reference <a href="https://cloud.google.com/anthos/docs/concepts/overview">https://cloud.google.com/anthos/docs/concepts/overview</a></p>
@@ -243,7 +243,7 @@ $ kubectx onprem-k8s-contrail=.</code></pre><p>Now we have three context represe
 eks-contrail
 gke
 onprem-k8s-contrail</code></pre><h3 id="configure-the-gcp-account-for-anthos">Configure the GCP account for Anthos</h3>
-<p>Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (On-premises and EKS) to connect to Anthos</p>
+<p>Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (On-premise and EKS) to connect to Anthos</p>
 <pre><code>$ PROJECT_ID=contrail-k8s-289615
 $ SERVICE_ACCOUNT_NAME=anthos-connect
 
@@ -330,7 +330,8 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath=&apos;{$.data.token}&apos; | bas
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image25.png" alt></p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image15.png" alt></p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image26.png" alt></p>
-<h3 id="deploy-anthos-apps-from-gcp-marketplace-into-kubernetes-on-prem-and-eks-clusters">Deploy Anthos Apps from GCP Marketplace into Kubernetes On-prem and EKS clusters</h3>
+<h3 id="deploy-anthos-apps-from-gcp-marketplace-into-kubernetes-on-premise-and-eks-clusters">Deploy Anthos Apps from GCP Marketplace into Kubernetes On-premise and EKS clusters</h3>
+<h3 id="deploy-postgresql-on-contrail-kubernetes-on-premise-cluster">Deploy PostgreSQL on Contrail Kubernetes On-premise cluster</h3>
 <p>The first time you deploy an application to a Anthos attached cluster, you must also create a namespace called <code>application-system</code> for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.</p>
 <pre><code>$ kubectl create ns application-system
 
@@ -437,7 +438,8 @@ $ kubectl patch serviceaccount default -p &apos;{&quot;imagePullSecrets&quot;: [
 $ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>As I mentioned above GCP Marketplace extects a storage class named <code>standard</code>. Thde default storage class name in EKS is <code>gp2</code>.</p>
 <p>First remove the default flag from the gp2 storage class by patching it.</p>
 <pre><code>$  kubectl patch storageclass gp2 -p &apos;{&quot;metadata&quot;: {&quot;annotations&quot;:{&quot;storageclass.kubernetes.io/is-default-class&quot;:&quot;false&quot;}}}&apos;
-storageclass.storage.k8s.io/gp2 patched</code></pre><p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
+storageclass.storage.k8s.io/gp2 patched</code></pre><h3 id="deploy-prometheus-grafana-on-contrail-eks-cluster">Deploy Prometheus &amp; Grafana on Contrail EKS cluster</h3>
+<p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
 <pre><code>$ cat &lt;&lt;EOF &gt; eks-sc.yaml
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -492,7 +494,17 @@ prometheus-1-node-exporter-k8vfn                   1/1     Running     0        
 prometheus-1-node-exporter-v6w7g                   1/1     Running     0          2m36s
 prometheus-1-node-exporter-zffs9                   1/1     Running     0          2m36s
 prometheus-1-prometheus-0                          1/1     Running     0          2m36s
-prometheus-1-prometheus-1                          1/1     Running     0          2m36s</code></pre><h2 id="configuration-management">Configuration Management</h2>
+prometheus-1-prometheus-1                          1/1     Running     0          2m36s</code></pre><p>Grafana is exposed in a ClusterP-only service <code>prometheus-1-grafana</code>. To connect to Grafana UI, you can either expose a public service endpoint or keep it private, but connect from you local environment with <code>kubectl port-forward</code>.</p>
+<pre><code>kubectl get svc -n monitoring
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+prometheus-1-alertmanager            ClusterIP   10.100.92.6      &lt;none&gt;        9093/TCP            10m
+prometheus-1-alertmanager-operated   ClusterIP   None             &lt;none&gt;        6783/TCP,9093/TCP   10m
+prometheus-1-grafana                 ClusterIP   10.100.126.78    &lt;none&gt;        80/TCP              10m
+prometheus-1-kube-state-metrics      ClusterIP   10.100.46.18     &lt;none&gt;        8080/TCP,8081/TCP   10m
+prometheus-1-prometheus              ClusterIP   10.100.214.104   &lt;none&gt;        9090/TCP            10m</code></pre><p>You can use port forwarding feature of kubectl to forward Grafana&apos;s port to your local machine. Run the following command in background:</p>
+<pre><code>$ kubectl port-forward --namespace monitoring prometheus-1-grafana-0 3000
+Now you can access Grafana UI with http://localhost:3000/.
+`</code></pre><h2 id="configuration-management">Configuration Management</h2>
 <h3 id="anthos-config-management">Anthos Config Management</h3>
 <p>In this part will I use GitOps-style deployment to push workloads across all registered clusters through Anthos Config Management.
 GitOps is a way to do Kubernetes cluster management and application delivery.  It works by using Git as a single source of truth for declarative infrastructure and applications. Since Kubernetes uses YAML or JSON files for specifications, it becomes easy to combine these artifacts with code.

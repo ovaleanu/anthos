@@ -1,7 +1,7 @@
 # Integrate a Kubernetes and EKS cluster with Contrail in Google Anthos
 
 
-Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
+Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premise (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
@@ -312,7 +312,7 @@ onprem-k8s-contrail
 
 ### Configure the GCP account for Anthos
 
-Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (On-premises and EKS) to connect to Anthos
+Before registering the clusters we need to create a service account and JSON file containing Google Cloud Service Account credentials for external clusters (On-premise and EKS) to connect to Anthos
 
 ```
 $ PROJECT_ID=contrail-k8s-289615
@@ -477,7 +477,9 @@ I can view details about it in Kubernetes Engine tab
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image26.png)
 
-### Deploy Anthos Apps from GCP Marketplace into Kubernetes On-prem and EKS clusters
+### Deploy Anthos Apps from GCP Marketplace into Kubernetes On-premise and EKS clusters
+
+### Deploy PostgreSQL on Contrail Kubernetes On-premise cluster
 
 The first time you deploy an application to a Anthos attached cluster, you must also create a namespace called `application-system` for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.
 
@@ -675,6 +677,8 @@ $  kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass
 storageclass.storage.k8s.io/gp2 patched
 ```
 
+### Deploy Prometheus & Grafana on Contrail EKS cluster
+
 Now you will create a new storage class based Amazon EBS and mark it as the default one.
 
 ```
@@ -753,6 +757,24 @@ prometheus-1-prometheus-0                          1/1     Running     0        
 prometheus-1-prometheus-1                          1/1     Running     0          2m36s
 ```
 
+Grafana is exposed in a ClusterP-only service `prometheus-1-grafana`. To connect to Grafana UI, you can either expose a public service endpoint or keep it private, but connect from you local environment with `kubectl port-forward`.
+
+```
+kubectl get svc -n monitoring
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+prometheus-1-alertmanager            ClusterIP   10.100.92.6      <none>        9093/TCP            10m
+prometheus-1-alertmanager-operated   ClusterIP   None             <none>        6783/TCP,9093/TCP   10m
+prometheus-1-grafana                 ClusterIP   10.100.126.78    <none>        80/TCP              10m
+prometheus-1-kube-state-metrics      ClusterIP   10.100.46.18     <none>        8080/TCP,8081/TCP   10m
+prometheus-1-prometheus              ClusterIP   10.100.214.104   <none>        9090/TCP            10m
+```
+
+You can use port forwarding feature of kubectl to forward Grafana's port to your local machine. Run the following command in background:
+
+```
+$ kubectl port-forward --namespace monitoring prometheus-1-grafana-0 3000
+Now you can access Grafana UI with http://localhost:3000/.
+````
 
 
 ## Configuration Management
