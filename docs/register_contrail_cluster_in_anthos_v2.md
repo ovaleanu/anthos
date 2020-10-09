@@ -118,7 +118,7 @@ kubectl auth can-i '*' '*' --all-namespaces
 
 ### Creating a EKS cluster with Contrail in AWS
 
-For installing a OpenShift 4.4 cluster with Contrail in AWS, follow the installation procedure [here](https://ssd-git.juniper.net/sre/contrail-as-the-cni-for-aws-eks)
+For installing an EKS cluster with Contrail in AWS, follow the installation procedure [here](https://ssd-git.juniper.net/sre/contrail-as-the-cni-for-aws-eks)
 
 ```
 $ kubectl get nodes -o wide

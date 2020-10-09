@@ -110,7 +110,7 @@ redis-ctzhg                           1/1     Running   0          19h</code></p
   --user=kubelet \
   --group=system:serviceaccounts</code></pre><p>Grant the cluster-admin RBAC role</p>
 <pre><code>kubectl auth can-i &apos;*&apos; &apos;*&apos; --all-namespaces</code></pre><h3 id="creating-a-eks-cluster-with-contrail-in-aws">Creating a EKS cluster with Contrail in AWS</h3>
-<p>For installing a OpenShift 4.4 cluster with Contrail in AWS, follow the installation procedure <a href="https://ssd-git.juniper.net/sre/contrail-as-the-cni-for-aws-eks">here</a></p>
+<p>For installing an EKS cluster with Contrail in AWS, follow the installation procedure <a href="https://ssd-git.juniper.net/sre/contrail-as-the-cni-for-aws-eks">here</a></p>
 <pre><code>$ kubectl get nodes -o wide
 NAME                                            STATUS   ROLES    AGE   VERSION    INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION    CONTAINER-RUNTIME
 ip-100-72-0-119.eu-central-1.compute.internal   Ready    infra    30h   v1.16.15   100.72.0.119   &lt;none&gt;        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
