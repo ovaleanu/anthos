@@ -477,9 +477,9 @@ I can view details about it in Kubernetes Engine tab
 
 ![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image26.png)
 
-### Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster
+### Deploy Anthos Apps from GCP Marketplace into Kubernetes On-prem and EKS clusters
 
-The first time you deploy an application to a Anthos GKE on-prem cluster, you must also create a namespace called `application-system` for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.
+The first time you deploy an application to a Anthos attached cluster, you must also create a namespace called `application-system` for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.
 
 ```
 $ kubectl create ns application-system
@@ -641,6 +641,10 @@ Type "help" for help.
 
 postgres=#
 ```
+
+Let's deploy an application from Google Marketplace also on the EKS with Contrail cluster
+
+
 
 ## Configuration Management
 

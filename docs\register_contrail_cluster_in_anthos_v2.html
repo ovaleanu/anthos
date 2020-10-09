@@ -330,8 +330,8 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath=&apos;{$.data.token}&apos; | bas
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image25.png" alt></p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image15.png" alt></p>
 <p><img src="https://github.com/ovaleanujnpr/anthos/blob/master/images/image26.png" alt></p>
-<h3 id="deploy-anthos-apps-from-gcp-marketplace-into-kubernetes-on-prem-cluster">Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster</h3>
-<p>The first time you deploy an application to a Anthos GKE on-prem cluster, you must also create a namespace called <code>application-system</code> for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.</p>
+<h3 id="deploy-anthos-apps-from-gcp-marketplace-into-kubernetes-on-prem-and-eks-clusters">Deploy Anthos Apps from GCP Marketplace into Kubernetes On-prem and EKS clusters</h3>
+<p>The first time you deploy an application to a Anthos attached cluster, you must also create a namespace called <code>application-system</code> for Cloud Marketplace components, and apply an imagePullSecret to the default service account for the namespace.</p>
 <pre><code>$ kubectl create ns application-system
 
 $ kubens application-system
@@ -415,7 +415,8 @@ $ psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.6.18)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type &quot;help&quot; for help.
 
-postgres=#</code></pre><h2 id="configuration-management">Configuration Management</h2>
+postgres=#</code></pre><p>Let&apos;s deploy an application from Google Marketplace also on the EKS with Contrail cluster</p>
+<h2 id="configuration-management">Configuration Management</h2>
 <h3 id="anthos-config-management">Anthos Config Management</h3>
 <p>In this part will I use GitOps-style deployment to push workloads across all registered clusters through Anthos Config Management.
 GitOps is a way to do Kubernetes cluster management and application delivery.  It works by using Git as a single source of truth for declarative infrastructure and applications. Since Kubernetes uses YAML or JSON files for specifications, it becomes easy to combine these artifacts with code.
