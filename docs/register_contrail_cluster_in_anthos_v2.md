@@ -929,3 +929,36 @@ Current   Context               Sync Status      Last Synced Token   Sync Branch
           gke                   SYNCED           7da177ce            1.0.0         Healthy
           onprem-k8s-contrail   SYNCED           7da177ce            1.0.0         Healthy
 ```
+
+The sameple foo-corp repo includes configs in the cluster/ and namespace/ directories. All objects managed by Anthos Config Management have the app.kubernetes.io/managed-by label set to configmanagement.gke.io.
+You can list all the namespaces managed by Anthos Config management. You can find more details on [here](https://cloud.google.com/anthos-config-management/docs/how-to/configs)
+
+```
+$ kubectl get ns -l app.kubernetes.io/managed-by=configmanagement.gke.io
+NAME               STATUS   AGE
+audit              Active   13m
+shipping-dev       Active   13m
+shipping-prod      Active   13m
+shipping-staging   Active   13m
+```
+
+Let's see what happens, if you will delete a namespace from Contrail EKS cluster
+
+```
+$ kubectx eks-contrail
+
+$ kubectl delete ns audit
+namespace "audit" deleted
+```
+
+Check immediately the status of the `namespace audit`
+
+```
+$ kubectl get ns audit
+NAME    STATUS   AGE
+audit   Active   5s
+```
+
+You can see was just created 5s ago.
+
+With ACM, Anthos can ensure that each registered cluster has the desired state of the configuration by constantly syncing it with the ACM repo. 
