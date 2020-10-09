@@ -448,7 +448,7 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --deco
 
 The output token use it in Cloud Console to Login to the cluster
 
-I will do the same for EKS cluster
+I will do the same for the EKS cluster
 
 ```
 $ kubectx eks-contrail

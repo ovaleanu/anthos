@@ -313,7 +313,7 @@ $ kubectl create clusterrolebinding anthos-node-reader --clusterrole node-reader
 $ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-admin --serviceaccount default:${KSA_NAME}</code></pre><p>To acquire the KSA&apos;s bearer token, run the following command:</p>
 <pre><code>$ SECRET_NAME=$(kubectl get serviceaccount ${KSA_NAME} -o jsonpath=&apos;{$.secrets[0].name}&apos;)
 $ kubectl get secret ${SECRET_NAME} -o jsonpath=&apos;{$.data.token}&apos; | base64 --decode</code></pre><p>The output token use it in Cloud Console to Login to the cluster</p>
-<p>I will do the same for EKS cluster</p>
+<p>I will do the same for the EKS cluster</p>
 <pre><code>$ kubectx eks-contrail
 $ $ kubectl apply -f node-reader.yaml
 
