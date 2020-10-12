@@ -124,71 +124,66 @@ For installing an EKS cluster with Contrail in AWS, follow the installation proc
 $ kubectl get nodes -o wide
 NAME                                            STATUS   ROLES    AGE   VERSION    INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION    CONTAINER-RUNTIME
 ip-100-72-0-119.eu-central-1.compute.internal   Ready    infra    30h   v1.16.15   100.72.0.119   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
-ip-100-72-0-216.eu-central-1.compute.internal   Ready    infra    30h   v1.16.15   100.72.0.216   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
+ip-100-72-0-220.eu-central-1.compute.internal   Ready    <none>   30h   v1.16.15   100.72.0.220   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
 ip-100-72-0-245.eu-central-1.compute.internal   Ready    infra    30h   v1.16.15   100.72.0.245   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
-ip-100-72-1-116.eu-central-1.compute.internal   Ready    <none>   30h   v1.16.15   100.72.1.116   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
+ip-100-72-1-116.eu-central-1.compute.internal   Ready    infra    30h   v1.16.15   100.72.1.116   <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
 ip-100-72-1-67.eu-central-1.compute.internal    Ready    <none>   30h   v1.16.15   100.72.1.67    <none>        Ubuntu 18.04.3 LTS   4.15.0-1054-aws   docker://17.3.2
 
 $ kubectl get pods --all-namespaces
-NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE
-kube-system   cni-patches-2svt6                   1/1     Running   0          44h
-kube-system   cni-patches-9mpss                   1/1     Running   0          44h
-kube-system   cni-patches-fdbws                   1/1     Running   0          44h
-kube-system   cni-patches-ggdph                   1/1     Running   0          44h
-kube-system   cni-patches-h46q2                   1/1     Running   0          44h
-kube-system   config-zookeeper-68tw7              1/1     Running   0          44h
-kube-system   config-zookeeper-9b799              1/1     Running   0          44h
-kube-system   config-zookeeper-gfxfw              1/1     Running   0          44h
-kube-system   contrail-agent-2dm9q                3/3     Running   0          44h
-kube-system   contrail-agent-4bsx7                3/3     Running   0          44h
-kube-system   contrail-agent-56c87                3/3     Running   0          44h
-kube-system   contrail-agent-b7n68                3/3     Running   0          44h
-kube-system   contrail-agent-ckqk7                3/3     Running   0          44h
-kube-system   contrail-analytics-alarm-hd99q      4/4     Running   0          44h
-kube-system   contrail-analytics-alarm-trbdq      4/4     Running   0          44h
-kube-system   contrail-analytics-alarm-znkc2      4/4     Running   0          44h
-kube-system   contrail-analytics-dmk77            4/4     Running   0          44h
-kube-system   contrail-analytics-nnhsx            4/4     Running   0          44h
-kube-system   contrail-analytics-snmp-q82bj       4/4     Running   0          44h
-kube-system   contrail-analytics-snmp-q8kh7       4/4     Running   0          44h
-kube-system   contrail-analytics-snmp-qnjlc       4/4     Running   0          44h
-kube-system   contrail-analytics-xng7q            4/4     Running   0          44h
-kube-system   contrail-analyticsdb-jnmg8          4/4     Running   0          44h
-kube-system   contrail-analyticsdb-mtp5r          4/4     Running   0          44h
-kube-system   contrail-analyticsdb-pkx5t          4/4     Running   0          44h
-kube-system   contrail-configdb-4682z             3/3     Running   0          44h
-kube-system   contrail-configdb-gqps2             3/3     Running   0          44h
-kube-system   contrail-configdb-wbxcp             3/3     Running   0          44h
-kube-system   contrail-controller-config-jvgb9    6/6     Running   2          44h
-kube-system   contrail-controller-config-qbt74    6/6     Running   3          44h
-kube-system   contrail-controller-config-x79xd    6/6     Running   3          44h
-kube-system   contrail-controller-control-6mp8r   5/5     Running   0          44h
-kube-system   contrail-controller-control-v5p9j   5/5     Running   0          44h
-kube-system   contrail-controller-control-v72qt   5/5     Running   0          44h
-kube-system   contrail-controller-webui-4gwkm     2/2     Running   0          44h
-kube-system   contrail-controller-webui-965bp     2/2     Running   0          44h
-kube-system   contrail-controller-webui-crjzb     2/2     Running   0          44h
-kube-system   contrail-kube-manager-5mk8l         1/1     Running   0          44h
-kube-system   contrail-kube-manager-bn4nx         1/1     Running   1          44h
-kube-system   contrail-kube-manager-dvgr9         1/1     Running   1          44h
-kube-system   coredns-5fdf64ff8-5tjnq             1/1     Running   0          44h
-kube-system   coredns-5fdf64ff8-g4j95             1/1     Running   0          44h
-kube-system   kube-proxy-4zw9q                    1/1     Running   1          46h
-kube-system   kube-proxy-8d49f                    1/1     Running   1          46h
-kube-system   kube-proxy-s5qhd                    1/1     Running   1          46h
-kube-system   kube-proxy-xwxqf                    1/1     Running   1          46h
-kube-system   kube-proxy-z6wnp                    1/1     Running   1          46h
-kube-system   rabbitmq-mjqgb                      1/1     Running   0          44h
-kube-system   rabbitmq-s44vd                      1/1     Running   0          44h
-kube-system   rabbitmq-tbwwh                      1/1     Running   0          44h
-kube-system   redis-fg6xv                         1/1     Running   0          44h
-kube-system   redis-gtlsk                         1/1     Running   0          44h
-kube-system   redis-vgrz9                         1/1     Running   0          44h
-kube-system   upgrade-nodes-75fzq                 1/1     Running   1          44h
-kube-system   upgrade-nodes-fcrsq                 1/1     Running   1          44h
-kube-system   upgrade-nodes-lfjll                 1/1     Running   1          44h
-kube-system   upgrade-nodes-qd64n                 1/1     Running   1          44h
-kube-system   upgrade-nodes-t9lc6                 1/1     Running   1          44h
+NAME                                          READY   STATUS    RESTARTS   AGE
+cni-patches-2jm8n                             1/1     Running   0          4d21h
+cni-patches-2svt6                             1/1     Running   0          4d21h
+cni-patches-9mpss                             1/1     Running   0          4d21h
+cni-patches-fdbws                             1/1     Running   0          4d21h
+cni-patches-ggdph                             1/1     Running   0          4d21h
+config-management-operator-5994858fbb-9xvmx   1/1     Running   0          2d20h
+config-zookeeper-fz5zv                        1/1     Running   0          4d21h
+config-zookeeper-n7wgk                        1/1     Running   0          4d21h
+config-zookeeper-pjffv                        1/1     Running   0          4d21h
+contrail-agent-69zpn                          3/3     Running   0          4d21h
+contrail-agent-gqtfv                          3/3     Running   0          4d21h
+contrail-agent-lb8tj                          3/3     Running   0          4d21h
+contrail-agent-lrrp8                          3/3     Running   0          4d21h
+contrail-agent-z4qjc                          3/3     Running   0          4d21h
+contrail-analytics-2bv7c                      4/4     Running   0          4d21h
+contrail-analytics-4jgq6                      4/4     Running   0          4d21h
+contrail-analytics-sn6cj                      4/4     Running   0          4d21h
+contrail-configdb-bhvlw                       3/3     Running   0          4d21h
+contrail-configdb-kvvk4                       3/3     Running   0          4d21h
+contrail-configdb-vbczf                       3/3     Running   0          4d21h
+contrail-controller-config-8vrrm              6/6     Running   1          4d21h
+contrail-controller-config-lxsms              6/6     Running   3          4d21h
+contrail-controller-config-r7ncm              6/6     Running   4          4d21h
+contrail-controller-control-5795l             5/5     Running   0          4d21h
+contrail-controller-control-dz6pl             5/5     Running   0          4d21h
+contrail-controller-control-qznf9             5/5     Running   0          4d21h
+contrail-controller-webui-2g5jx               2/2     Running   0          4d21h
+contrail-controller-webui-7kg48               2/2     Running   0          4d21h
+contrail-controller-webui-ww5z9               2/2     Running   0          4d21h
+contrail-kube-manager-2jhzc                   1/1     Running   2          4d21h
+contrail-kube-manager-8psh9                   1/1     Running   0          4d21h
+contrail-kube-manager-m8zg7                   1/1     Running   1          4d21h
+coredns-5fdf64ff8-bf2fc                       1/1     Running   0          4d21h
+coredns-5fdf64ff8-fg6fg                       1/1     Running   2          4d21h
+coredns-5fdf64ff8-g4j95                       1/1     Running   7          4d21h
+coredns-5fdf64ff8-s2sx8                       1/1     Running   0          4d21h
+coredns-5fdf64ff8-wfltn                       1/1     Running   0          4d21h
+kube-proxy-4zw9q                              1/1     Running   1          4d22h
+kube-proxy-8d49f                              1/1     Running   1          4d22h
+kube-proxy-p6xkw                              1/1     Running   0          4d22h
+kube-proxy-s5qhd                              1/1     Running   1          4d22h
+kube-proxy-z6wnp                              1/1     Running   1          4d22h
+rabbitmq-fpdbv                                1/1     Running   0          4d21h
+rabbitmq-hqwqm                                1/1     Running   0          4d21h
+rabbitmq-wwlv8                                1/1     Running   0          4d21h
+redis-6jxsf                                   1/1     Running   0          4d21h
+redis-m8j6c                                   1/1     Running   0          4d21h
+redis-wpbq2                                   1/1     Running   0          4d21h
+upgrade-nodes-6g2l9                           1/1     Running   0          4d21h
+upgrade-nodes-fcrsq                           1/1     Running   1          4d21h
+upgrade-nodes-lfjll                           1/1     Running   1          4d21h
+upgrade-nodes-qd64n                           1/1     Running   1          4d21h
+upgrade-nodes-t9lc6                           1/1     Running   1          4d21h
 ```
 
 ```
@@ -961,4 +956,4 @@ audit   Active   5s
 
 You can see was just created 5s ago.
 
-With ACM, Anthos can ensure that each registered cluster has the desired state of the configuration by constantly syncing it with the ACM repo. 
+With ACM, Anthos can ensure that each registered cluster has the desired state of the configuration by constantly syncing it with the ACM repo.
