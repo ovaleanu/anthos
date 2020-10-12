@@ -411,7 +411,8 @@ $ psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.6.18)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type &quot;help&quot; for help.
 
-postgres=#</code></pre><p>Let&apos;s deploy an application from Google Marketplace also on the EKS with Contrail cluster.
+postgres=#</code></pre><h3 id="deploy-prometheus-grafana-on-contrail-eks-cluster">Deploy Prometheus &amp; Grafana on Contrail EKS cluster</h3>
+<p>Let&apos;s deploy an application from Google Marketplace also on the EKS with Contrail cluster.
 You will repeat some steps from above.</p>
 <pre><code>$ kubectx eks-contrail
 Switched to context &quot;eks-contrail&quot;
@@ -433,8 +434,7 @@ $ kubectl patch serviceaccount default -p &apos;{&quot;imagePullSecrets&quot;: [
 $ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>As I mentioned above GCP Marketplace extects a storage class named <code>standard</code>. Thde default storage class name in EKS is <code>gp2</code>.</p>
 <p>First remove the default flag from the gp2 storage class by patching it.</p>
 <pre><code>$  kubectl patch storageclass gp2 -p &apos;{&quot;metadata&quot;: {&quot;annotations&quot;:{&quot;storageclass.kubernetes.io/is-default-class&quot;:&quot;false&quot;}}}&apos;
-storageclass.storage.k8s.io/gp2 patched</code></pre><h3 id="deploy-prometheus-grafana-on-contrail-eks-cluster">Deploy Prometheus &amp; Grafana on Contrail EKS cluster</h3>
-<p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
+storageclass.storage.k8s.io/gp2 patched</code></pre><p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
 <pre><code>$ cat &lt;&lt;EOF &gt; eks-sc.yaml
 kind: StorageClass
 apiVersion: storage.k8s.io/v1

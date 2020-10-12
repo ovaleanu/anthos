@@ -639,6 +639,8 @@ Type "help" for help.
 postgres=#
 ```
 
+### Deploy Prometheus & Grafana on Contrail EKS cluster
+
 Let's deploy an application from Google Marketplace also on the EKS with Contrail cluster.
 You will repeat some steps from above.
 
@@ -671,8 +673,6 @@ First remove the default flag from the gp2 storage class by patching it.
 $  kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 storageclass.storage.k8s.io/gp2 patched
 ```
-
-### Deploy Prometheus & Grafana on Contrail EKS cluster
 
 Now you will create a new storage class based Amazon EBS and mark it as the default one.
 
