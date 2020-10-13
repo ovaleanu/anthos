@@ -433,8 +433,7 @@ $ kubectl patch serviceaccount default -p &apos;{&quot;imagePullSecrets&quot;: [
 
 $ kubectl annotate namespace application-system marketplace.cloud.google.com/imagePullSecret=gcr-json-key</code></pre><p>As I mentioned above GCP Marketplace extects a storage class named <code>standard</code>. Thde default storage class name in EKS is <code>gp2</code>.</p>
 <p>First remove the default flag from the gp2 storage class by patching it.</p>
-<pre><code>$  kubectl patch storageclass gp2 -p &apos;{&quot;metadata&quot;: {&quot;annotations&quot;:{&quot;storageclass.kubernetes.io/is-default-class&quot;:&quot;false&quot;}}}&apos;
-storageclass.storage.k8s.io/gp2 patched</code></pre><p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
+<pre><code>$  kubectl patch storageclass gp2 -p &apos;{&quot;metadata&quot;: {&quot;annotations&quot;:{&quot;storageclass.kubernetes.io/is-default-class&quot;:&quot;false&quot;}}}&apos;</code></pre><p>Now you will create a new storage class based Amazon EBS and mark it as the default one.</p>
 <pre><code>$ cat &lt;&lt;EOF &gt; eks-sc.yaml
 kind: StorageClass
 apiVersion: storage.k8s.io/v1

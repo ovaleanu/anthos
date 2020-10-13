@@ -671,7 +671,6 @@ First remove the default flag from the gp2 storage class by patching it.
 
 ```
 $  kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
-storageclass.storage.k8s.io/gp2 patched
 ```
 
 Now you will create a new storage class based Amazon EBS and mark it as the default one.
