@@ -4,7 +4,7 @@
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premise (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/anthos-14-components.png)
 Reference https://cloud.google.com/anthos/docs/concepts/overview
 
 The scope of this document is integrate a on-prem K8s runing with Contrail together with an EKS with Contrail cluster and a native GKE cluster in GCP Anthos.
@@ -30,7 +30,7 @@ _Note: if `kubectl` version is lower than the [minimum supported Kubernetes vers
 ### Creating on-prem Kubernetes cluster using Contrail SDN
 
 
-I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
+I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanu/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
 
 In this case, I installed Kubernetes 1.18.9 on Ubuntu 18.04 OS.
 
@@ -337,7 +337,7 @@ $ gcloud iam service-accounts keys create ./${SERVICE_ACCOUNT_NAME}-svc.json \
 
 Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details [here](https://cloud.google.com/anthos/multicluster-management/connect/overview).
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image2.png)
 
 
 To register a non-GKE clusters we need to run the following command
@@ -460,17 +460,17 @@ $ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --deco
 
 The clusters should be visibile in Anthos
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image23.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image23.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image24.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image24.png)
 
 I can view details about it in Kubernetes Engine tab
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image25.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image25.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image15.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image15.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image26.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image26.png)
 
 ### Deploy Anthos Apps from GCP Marketplace into Kubernetes On-premise and EKS clusters
 
@@ -530,7 +530,7 @@ $ kubectl annotate namespace application-system marketplace.cloud.google.com/ima
 
 GCP Marketplace expects a storage class by name `standard` as the default storage class.
 
-Rename you storage class if it has a different name or create it. [Here](https://github.com/ovaleanujnpr/kubernetes/blob/master/docs/add_local_pv_k8s.md) is how to create a storage class using local volumes.
+Rename you storage class if it has a different name or create it. [Here](https://github.com/ovaleanu/kubernetes/blob/master/docs/add_local_pv_k8s.md) is how to create a storage class using local volumes.
 
 ```
 $ cat sc.yaml
@@ -586,19 +586,19 @@ All these steps were a preparation to deploy an app from GCP Marketplace to the 
 
 Choose PostgresSQL Server from GCP Marketplace and then click on Configure de start the deployment procedure
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image17.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image17.png)
 
 Choose the external cluster `onpremk8s-contrail-cluster-1`
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image27.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image27.png)
 
 Select the namespace created, storage class and click Deploy
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image19.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image19.png)
 
 After a minute PostgresSQl is deployed
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image20.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image20.png)
 
 ```
 $ kubectl get po -n pgsql
@@ -613,7 +613,7 @@ postgresql-1-postgresql-pvc-postgresql-1-postgresql-0   Bound    local-pv-e00b14
 
 In GKE Console we can filter to see the applications deployed on on-prem cluster
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image21.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image21.png)
 
 Access PostgreSQL
 
@@ -720,19 +720,19 @@ $ kubectl annotate namespace monitoring marketplace.cloud.google.com/imagePullSe
 
 Choose Prometheus & Grafana from GCP Marketplace and then click on Configure de start the deployment procedure
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image28.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image28.png)
 
 Choose the external cluster `eks-contrail-cluster-1`
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image29.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image29.png)
 
 Select the namespace created, storage class and click Deploy
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image30.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image30.png)
 
 After several minutes Prometheus & Grafana are deployed
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image31.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image31.png)
 
 ```
 $ kubectl get pods -n monitoring
@@ -837,10 +837,10 @@ Spec:
 Create an SSH keypair to allow the Operator to authenticate to your Git repository
 
 ```
-$ ssh-keygen -t rsa -b 4096 -C "ovaleanujnpr" -N '' -f "~/.ssh/gke-github"
+$ ssh-keygen -t rsa -b 4096 -C "ovaleanu" -N '' -f "~/.ssh/gke-github"
 ```
 
-In my case is `ovaleanujnpr` my git repository name.
+In my case is `ovaleanu` my git repository name.
 
 Configure your repo to recognize the newly-created public key. Details [here](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) for Github.
 Add the private key to a new Secret in the cluster. Do this step separately on every cluster.
@@ -875,7 +875,7 @@ spec:
   # clusterName is required and must be unique among all managed clusters
   clusterName:
   git:
-    syncRepo: git@github.com:ovaleanujnpr/csp-config-management.git
+    syncRepo: git@github.com:ovaleanu/csp-config-management.git
     syncBranch: 1.0.0
     secretType: ssh
     policyDir: foo-corp
@@ -905,7 +905,7 @@ syncer-7dbbc8868c-gtp8d         1/1     Running   0          4m25s
 
 and all the clusters synced on Anthos Dashboard
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image32.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image32.png)
 
 Google offers also an utility called **nomos** which can be used to manage the ACM.
 

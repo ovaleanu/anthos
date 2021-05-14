@@ -3,7 +3,7 @@
 Anthos is a portfolio of products and services for hybrid cloud and workload management that runs on the Google Kubernetes Engine (GKE) and users can manage workloads running also on third-party clouds like AWS, Azure and on-premises (private) clusters.
 The following diagram shows Anthos components and features and how they provide Anthos's functionality across your environments, from infrastructure management to facilitating application development.
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/anthos-14-components.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/anthos-14-components.png)
 Reference https://cloud.google.com/anthos/docs/concepts/overview
 
 The scope of this document is integrate an on-prem K8s runing with Contrail toghther with a GKE and EKS cluster in GCP Anthos.
@@ -28,7 +28,7 @@ _Note: if `kubectl` version is lower than the [minimum supported Kubernetes vers
 ### Creating on-prem Kubernetes cluster using Contrail SDN
 
 
-I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanujnpr/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
+I installed a Kubernetes cluster using Contrail SDN on BMS following the procedure from this [Wiki](https://github.com/ovaleanu/Kubernetes/wiki/Installing-Kubernetes-with-Contrail).
 
 In this case, I installed Kubernetes 1.16.11 on Ubuntu 18.04 OS.
 
@@ -267,7 +267,7 @@ $ gcloud iam service-accounts keys create ./${SERVICE_ACCOUNT_NAME}-svc.json \
 
 Connect allows you to connect any of your Kubernetes clusters to Google Cloud. This enables access to cluster and to workload management features, including a unified user interface, Cloud Console, to interact with your cluster. More details [here](https://cloud.google.com/anthos/multicluster-management/connect/overview).
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image2.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image2.png)
 
 
 To register a non-GKE clusters we need to run the following command
@@ -422,13 +422,13 @@ $ kubectl create clusterrolebinding anthos-cluster-admin --clusterrole cluster-a
 
 The clusters should be visibile in Anthos
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image4.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image4.png)
 
 I can view details about it in Kubernetes Engine tab
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image5.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image5.png)
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image6.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image6.png)
 
 ### Deploy Anthos Apps from GCP Marketplace into Kubernetes on-prem cluster
 
@@ -486,7 +486,7 @@ $ kubectl annotate namespace application-system marketplace.cloud.google.com/ima
 
 GCP Marketplace expects a storage class by name `standard` as the default storage class.
 
-Rename you storage class if it has a different name or create it. [Here](https://github.com/ovaleanujnpr/kubernetes/blob/master/docs/add_local_pv_k8s.md) is how to create a storage class using local volumes.
+Rename you storage class if it has a different name or create it. [Here](https://github.com/ovaleanu/kubernetes/blob/master/docs/add_local_pv_k8s.md) is how to create a storage class using local volumes.
 
 ```
 $ cat sc.yaml
@@ -542,19 +542,19 @@ All these steps were a preparation to deploy an app from GCP Marketplace to the 
 
 Choose PostgresSQL Server from GCP Marketplace and then click on Configure de start the deployment procedure
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image8.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image8.png)
 
 Choose the external cluster, `contrail-cluster-1`
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image9.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image9.png)
 
 Select the namespace created, storage class and click Deploy
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image10.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image10.png)
 
 After a minute PostgresSQl is deployed
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image11.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image11.png)
 
 ```
 $ kubectl get po -n pgsql
@@ -569,7 +569,7 @@ postgresql-1-postgresql-pvc-postgresql-1-postgresql-0   Bound    local-pv-e00b14
 
 In GKE Console we can filter to see the applications deployed on on-prem cluster
 
-![](https://github.com/ovaleanujnpr/anthos/blob/master/images/image12.png)
+![](https://github.com/ovaleanu/anthos/blob/master/images/image12.png)
 
 Access PostgreSQL
 
